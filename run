@@ -1,0 +1,76 @@
+#!/bin/bash
+
+SCALA_VERSION=2.9.2
+STREAMING_DEMO_VERSION=0.0.1
+
+FWDIR="$(cd `dirname $0`; pwd)"
+
+if [ "$LAUNCH_WITH_SCALA" == "1" ]; then
+  if [ `command -v scala` ]; then
+    RUNNER="scala"
+  else
+    if [ -z "$SCALA_HOME" ]; then
+      echo "SCALA_HOME is not set" >&2
+      exit 1
+    fi
+    RUNNER="${SCALA_HOME}/bin/scala"
+  fi
+else
+  if [ `command -v java` ]; then
+    RUNNER="java"
+  else
+    if [ -z "$JAVA_HOME" ]; then
+      echo "JAVA_HOME is not set" >&2
+      exit 1
+    fi
+    RUNNER="${JAVA_HOME}/bin/java"
+  fi
+  if [ -z "$SCALA_LIBRARY_PATH" ]; then
+    if [ -z "$SCALA_HOME" ]; then
+      echo "SCALA_HOME is not set" >&2
+      exit 1
+    fi
+    SCALA_LIBRARY_PATH="$SCALA_HOME/lib"
+  fi
+fi
+
+# Build up classpath
+CLASSPATH+=":$FWDIR/conf"
+CLASSPATH+=":$FWDIR/target/scala-$SCALA_VERSION/streaming-demo_$SCALA_VERSION-$STREAMING_DEMO_VERSION.jar"
+
+if [ -e "$FWDIR/lib_managed" ]; then
+  for jar in `find $FWDIR/lib_managed -name "*.jar"`
+  do
+      CLASSPATH+=":$jar"
+  done
+fi
+
+if [ -e "$FWDIR/lib" ]; then
+  for jar in `find $FWDIR/lib -name "*.jar"`
+  do
+      CLASSPATH+=":$jar"
+  done
+fi
+
+
+# Figure out whether to run our class with java or with the scala launcher.
+# In most cases, we'd prefer to execute our process with java because scala
+# creates a shell script as the parent of its Java process, which makes it
+# hard to kill the child with stuff like Process.destroy(). However, for
+# the Spark shell, the wrapper is necessary to properly reset the terminal
+# when we exit, so we allow it to set a variable to launch with scala.
+if [ "$SPARK_LAUNCH_WITH_SCALA" == "1" ]; then
+  EXTRA_ARGS=""     # Java options will be passed to scala as JAVA_OPTS
+else
+  CLASSPATH+=":$SCALA_LIBRARY_PATH/scala-library.jar"
+  CLASSPATH+=":$SCALA_LIBRARY_PATH/scala-compiler.jar"
+  CLASSPATH+=":$SCALA_LIBRARY_PATH/jline.jar"
+  # The JVM doesn't read JAVA_OPTS by default so we need to pass it in
+  EXTRA_ARGS="$JAVA_OPTS"
+fi
+
+if [ -f "$FWDIR/conf/streaming-demo-env.sh" ]; then
+    . $FWDIR/conf/streaming-demo-env.sh
+fi
+
+exec "$RUNNER" -cp "$CLASSPATH" $EXTRA_ARGS "$@"
