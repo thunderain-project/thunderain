@@ -34,6 +34,29 @@ else
   fi
 fi
 
+
+# add environment
+
+if [ -f "$FWDIR/conf/streaming-demo-env.sh" ]; then
+    . $FWDIR/conf/streaming-demo-env.sh
+fi
+
+if [ -f "$FWDIR/conf/shark-env.sh" ]; then
+    . $FWDIR/conf/shark-env.sh
+fi
+
+if [ "x$HIVE_HOME" == "x" ] ; then
+    echo "No HIVE_HOME specified. Please set HIVE_HOME."
+    exit 1
+fi
+
+if [ ! -f $HIVE_HOME/lib/hive-exec-0*.jar ] ; then
+  echo "Cannot find $HIVE_HOME/lib/hive-exec-0.9.0.jar."
+  echo "Are you sure your HIVE_HOME is set correctly?"
+  echo "HIVE_HOME = $HIVE_HOME"
+  exit 1
+fi
+
 # Build up classpath
 CLASSPATH+=":$FWDIR/conf"
 CLASSPATH+=":$FWDIR/target/scala-$SCALA_VERSION/streaming-demo_$SCALA_VERSION-$STREAMING_DEMO_VERSION.jar"
@@ -52,6 +75,13 @@ if [ -e "$FWDIR/lib" ]; then
   done
 fi
 
+for jar in `find $HIVE_HOME/lib -name '*jar'`; do
+  # Ignore the logging library since it has already been included with the Spark jar.
+  if [[ "$jar" != *slf4j* ]]; then
+    CLASSPATH+=:$jar
+  fi
+done
+
 
 # Figure out whether to run our class with java or with the scala launcher.
 # In most cases, we'd prefer to execute our process with java because scala
@@ -67,10 +97,6 @@ else
   CLASSPATH+=":$SCALA_LIBRARY_PATH/jline.jar"
   # The JVM doesn't read JAVA_OPTS by default so we need to pass it in
   EXTRA_ARGS="$JAVA_OPTS"
-fi
-
-if [ -f "$FWDIR/conf/streaming-demo-env.sh" ]; then
-    . $FWDIR/conf/streaming-demo-env.sh
 fi
 
 exec "$RUNNER" -cp "$CLASSPATH" $EXTRA_ARGS "$@"

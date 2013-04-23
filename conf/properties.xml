@@ -19,13 +19,13 @@
             <property window="30" slide="10" hierarchy="/" type="count">
                 <name>page_view</name>
                 <key>dest_url</key>
-                <output>stream.framework.output.TachyonStrToLongOutput</output>
+                <output>stream.framework.output.StrToLongCachedOutput</output>
             </property>
             <property window="30" slide="10" hierarchy="/" type="distinct_aggregate_count">
                 <name>user_visit_count</name>
                 <key>dest_url</key>
                 <value>source_ip</value>
-                <output>stream.framework.output.TachyonStrToLongOutput</output>
+                <output>stream.framework.output.StrToLongCachedOutput</output>
             </property>
         </properties>
     </application>

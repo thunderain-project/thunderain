@@ -10,16 +10,17 @@ abstract class AbstractEventOutput extends Serializable{
    */
   def output(stream: DStream[_])
   
-  def setOutputName(name: String) {
-    outputName = name
-  }
-  
-  def getOutputName = outputName
+  def setOutputName(name: String)
 }
 
 class StdEventOutput extends AbstractEventOutput {
+  private var outputName: String = _
   
   override def output(stream: DStream[_]) {
     stream.print()
   }
+  
+  override def setOutputName(name: String) {
+	  outputName = name
+  } 
 }
