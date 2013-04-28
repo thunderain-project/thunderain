@@ -1,11 +1,7 @@
 package stream.framework
 
 import spark.streaming.DStream
-import spark.streaming.StreamingContext
-import spark.streaming.Seconds
-import spark.SparkContext
 
-import stream.framework.util.AppConfig
 import stream.framework.parser.AbstractEventParser
 import stream.framework.output.AbstractEventOutput
 import stream.framework.output.StdEventOutput
@@ -52,48 +48,5 @@ object FrameworkEnv {
         p._2.output(resultStream)
         })
     }
-  }
-  
-  def main(args: Array[String]) {
-    if (args.length < 1) {
-      println("FrameworkEnv conf/properties.xml")
-      exit(1)
-    }
-    
-    System.setProperty("spark.cleaner.ttl", "3600")
-    
-    //parse the conf file
-    Configuration.parseConfig(args(0))
-
-    //for each app, create its app env
-    val appEnvs = Configuration.appConfMap.map(e => (e._1, new AppEnv(e._2)))
-    
-    //create kafka input stream    
-    val master = System.getenv("SPARK_MASTER_URL")
-    val sparkHome = System.getenv("SPARK_HOME")
-    val jars = System.getenv("STREAM_JAR_PATH").split(":")
-    
-    val sc = new SparkContext(master, "kafkaStream", sparkHome, jars.toSeq)
-    val ssc =  new StreamingContext(sc, Seconds(5))
-    ssc.checkpoint("checkpoint")
-    
-    val zkQuorum = System.getenv("ZK_QUORUM")
-    val group = System.getenv("KAFKA_GROUP")
-    /****************TODO. this should be modified later*******************/
-    //cause all the topics are in one DStream, first we should filter out
-    // what topics to what application
-    // because kafka stream currently do not support decode method
-    // other than string decode, so currently workaround solution is:
-    // all the input message should follow this format: "category|||message",
-    // "|||" is a delimiter, category is topic name, message is content
-    val lines = ssc.kafkaStream[String](zkQuorum, group, 
-         Configuration.appConfMap.map(e => (e._1, 1)))
-    val streams = appEnvs.map(e => (e._1, lines.filter(s => s.startsWith(e._1))))
-    	 .map(e => (e._1, e._2.map(s => s.substring(s.indexOf("|||") + 3))))
-    
-    streams.foreach(e => appEnvs(e._1).process(e._2))
-    
-    
-    ssc.start()
   }
 }
