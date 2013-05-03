@@ -8,7 +8,7 @@ import shark.memstore.ColumnStats._
 object ColumnBuilderFactory {
   val COLUMN_SIZE = 100
   
-  def newColumnBuilder(primitiveType: String) = {
+  def newColumnBuilder(primitiveType: String): ColumnBuilder = {
     primitiveType match {
       case "Boolean" => 
         new BooleanColumnBuilder(new BooleanColumnFormat(COLUMN_SIZE), BooleanColumnNoStats)

@@ -4,18 +4,23 @@ import scala.collection.mutable
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector
 
+import org.apache.hadoop.io._
+
 import shark.SharkEnv
 import shark.memstore.{ColumnStats, ColumnNoStats}
 import shark.memstore.TableStorage
 import shark.memstore.TableStats
 
 import spark.RDD
+import spark.SparkContext._
 import spark.streaming.DStream
 import spark.rdd.UnionRDD
 import spark.storage.StorageLevel
 
 class StrToLongCachedOutput extends AbstractEventOutput {
   private var outputName: String = _
+  val PART_NUM = Some(System.getenv("OUTPUT_PARTITION_NUM")).getOrElse("4").toInt
+  val types = Array("Long", "String", "Long")
   
   override def setOutputName(name: String) {
     outputName = name + "_cached"
@@ -26,7 +31,6 @@ class StrToLongCachedOutput extends AbstractEventOutput {
       val statAccum = SharkEnv.sc.accumulableCollection(mutable.ArrayBuffer[(Int, TableStats)]())
       
       val newRdd = r.mapPartitionsWithIndex((index, iter) => {
-        val types = Array("Long", "String", "Long")
         val colBuilders = types.map(ColumnBuilderFactory.newColumnBuilder(_))
         val objInspectors: Array[ObjectInspector] = types.map(
             PrimitiveObjInspectorFactory.newPrimitiveObjInspector(_))
@@ -58,15 +62,51 @@ class StrToLongCachedOutput extends AbstractEventOutput {
       // union current RDD and previous RDD to a new RDD, put to cache
       val unionRdd = SharkEnv.cache.get(outputName) match {
         case None => newRdd
-        case Some(r) => newRdd.union(r.asInstanceOf[RDD[TableStorage]])
+        case Some(r) => r.asInstanceOf[RDD[TableStorage]].union(newRdd)
       }
+
+      //reduce the union RDD for better performance
+      var i = 0l
+      val reducedRdd = unionRdd.map(r => {i += 1; (i, r)}).reduceByKey((s1, s2) => {
+        val colBuilders = types.map(ColumnBuilderFactory.newColumnBuilder(_))
+        val objInspectors: Array[ObjectInspector] = types.map(
+            PrimitiveObjInspectorFactory.newPrimitiveObjInspector(_))
+        
+        val numRows = s1.size + s2.size
+        
+        s1.iterator.foreach(c => {
+          val row = c.getFieldsAsList()
+          
+          colBuilders(0).append(
+              row.get(0).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(0))
+          colBuilders(1).append(
+              row.get(1).asInstanceOf[Text].toString, objInspectors(1))
+          colBuilders(2).append(
+              row.get(2).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(2))
+        })
+
+        s2.iterator.foreach(c => {
+          val row = c.getFieldsAsList()
+          
+          colBuilders(0).append(
+              row.get(0).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(0))
+          colBuilders(1).append(
+              row.get(1).asInstanceOf[Text].toString, objInspectors(1))
+          colBuilders(2).append(
+              row.get(2).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(2))
+        })
+        
+        val columns = colBuilders.map(_.build)
+        
+        new TableStorage(numRows, columns.map(_.format))
+      }, PART_NUM).map(r => r._2)
+      
+      reducedRdd.foreach(_ => Unit)
       
       // put rdd and statAccum to cache manager
-      SharkEnv.cache.put(outputName, unionRdd, StorageLevel.MEMORY_ONLY)
+      SharkEnv.cache.put(outputName, reducedRdd, StorageLevel.MEMORY_ONLY)
       SharkEnv.cache.putStats(outputName, statAccum.value.toMap)
-      
-      unionRdd.foreach(_ => Unit)
+
     })
   }
-  
 }
