@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <applications>
+    <operators>
+        <operator type="count" class="stream.framework.operator.CountOperator"/>
+        <operator type="distinct_aggregate_count" class="stream.framework.operator.DistinctAggregateCountOperator"/>
+        <operator type="aggregate" class="stream.framework.operator.AggregateOperator"/>
+    </operators>
     <application>
         <category>clickstream</category>
         <parser>example.clickstream.ClickEventParser</parser>
@@ -15,18 +20,24 @@
             <item>s_keyword</item>
             <item>avg_time_onsite</item>
         </items>
-        <properties>
-            <property window="30" slide="10" hierarchy="/" type="count">
-                <name>page_view</name>
+        <jobs>
+            <job name="page_view" type="count">
+                <property window="30" slide="10" hierarchy="true"/>
                 <key>dest_url</key>
-                <output>stream.framework.output.StrToLongCachedOutput</output>
-            </property>
-            <property window="30" slide="10" hierarchy="/" type="distinct_aggregate_count">
-                <name>user_visit_count</name>
+                <output>stream.framework.output.StdEventOutput</output>
+            </job>
+            <job name="user_visit_count" type="distinct_aggregate_count">
+                <property window="30" slide="10" hierarchy="true"/>
                 <key>dest_url</key>
                 <value>source_ip</value>
-                <output>stream.framework.output.StrToLongCachedOutput</output>
-            </property>
-        </properties>
+                <output>stream.framework.output.StdEventOutput</output>
+            </job>
+            <job name="user_visit" type="aggregate">
+                <property window="30" slide="10" hierarchy="true"/>
+                <key>dest_url</key>
+                <value>source_ip</value>
+                <output>stream.framework.output.StdEventOutput</output>
+            </job>
+        </jobs>
     </application>
 </applications>

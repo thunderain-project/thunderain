@@ -9,10 +9,6 @@ import spark.SparkEnv
 import spark.streaming.StreamingContext
 import spark.streaming.Seconds
 
-import stream.framework.FrameworkEnv.AppEnv
-import stream.framework.util._
-
-
 object StreamingDemo {
   
   def main(args: Array[String]) {
@@ -39,13 +35,9 @@ object StreamingDemo {
     System.setProperty("spark.cleaner.ttl", "3600")
     
     //parse the conf file
-    Configuration.parseConfig(args(0))
-
-    //for each app, create its app env
-    val appEnvs = Configuration.appConfMap.map(e => (e._1, new AppEnv(e._2)))
+    FrameworkEnv.parseConfig(args(0))
     
     //create streaming context
-    SharkEnv.init()
     SparkEnv.set(sparkEnv)
     val ssc =  new StreamingContext(SharkEnv.sc, Seconds(10))
     ssc.checkpoint("checkpoint")
@@ -61,6 +53,7 @@ object StreamingDemo {
     
     val zkQuorum = System.getenv("ZK_QUORUM")
     val group = System.getenv("KAFKA_GROUP")
+    val apps = FrameworkEnv.apps
     /****************TODO. this should be modified later*******************/
     //cause all the topics are in one DStream, first we should filter out
     // what topics to what application
@@ -68,12 +61,12 @@ object StreamingDemo {
     // other than string decode, so currently workaround solution is:
     // all the input message should follow this format: "category|||message",
     // "|||" is a delimiter, category is topic name, message is content
-    val lines = ssc.kafkaStream[String](zkQuorum, group, 
-         Configuration.appConfMap.map(e => (e._1, 1)))
-    val streams = appEnvs.map(e => (e._1, lines.filter(s => s.startsWith(e._1))))
+    val lines = ssc.kafkaStream[String](zkQuorum, group, apps.map(e => (e._1, 1)))
+         
+    val streams = apps.map(e => (e._1, lines.filter(s => s.startsWith(e._1))))
     	 .map(e => (e._1, e._2.map(s => s.substring(s.indexOf("|||") + 3))))
     
-    streams.foreach(e => appEnvs(e._1).process(e._2))
+    streams.foreach(e => apps(e._1).process(e._2))
     
     ssc.start()
   }
