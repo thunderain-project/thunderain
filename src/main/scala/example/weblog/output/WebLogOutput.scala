@@ -18,13 +18,21 @@ import spark.storage.StorageLevel
 
 import stream.framework.output.AbstractEventOutput
 
-class StrToLongCachedOutput extends AbstractEventOutput {
+class WebLogOutput extends AbstractEventOutput {
   private var outputName: String = _
+  private var jobName: String = _
   val PART_NUM = Some(System.getenv("OUTPUT_PARTITION_NUM")).getOrElse("4").toInt
-  val types = Array("Long", "String", "Long")
+  private var types: Array[String] = _
   
   override def setOutputName(name: String) {
+    jobName = name
     outputName = name + "_cached"
+    
+    jobName match {
+      case "item_view" => types = Array("Long", "String", "Long", "Long")
+      case "subcategory_view" => types = Array("Long", "String", "String", "Long")
+      case _ => throw new Exception("unkown job name " + jobName)
+    }
   }
   
   override def output(stream: DStream[_]) {
@@ -37,14 +45,13 @@ class StrToLongCachedOutput extends AbstractEventOutput {
             PrimitiveObjInspectorFactory.newPrimitiveObjInspector(_))
         
         var numRows = 0;
-        val currTime = System.currentTimeMillis() / 1000;
+        val currTime = (System.currentTimeMillis() / 1000).asInstanceOf[Object];
         
         iter.foreach(row => {
-          val newRow = row.asInstanceOf[(String, Long)]
-          
-          colBuilders(0).append(currTime: java.lang.Long, objInspectors(0))
-          colBuilders(1).append(newRow._1, objInspectors(1))
-          colBuilders(2).append(newRow._2: java.lang.Long, objInspectors(2))
+          val (t1, ((t2, t3), t4)) = (currTime, row.asInstanceOf[((Object, Object), Object)])
+          Array(t1, t2, t3, t4).zipWithIndex.foreach(r => 
+            colBuilders(r._2).append(r._1, objInspectors(r._2)))
+
           numRows += 1
         })
         
@@ -72,29 +79,30 @@ class StrToLongCachedOutput extends AbstractEventOutput {
         val colBuilders = types.map(ColumnBuilderFactory.newColumnBuilder(_))
         val objInspectors: Array[ObjectInspector] = types.map(
             PrimitiveObjInspectorFactory.newPrimitiveObjInspector(_))
-        
-        val numRows = s1.size + s2.size
-        
-        s1.iterator.foreach(c => {
-          val row = c.getFieldsAsList()
+        val storages = Array(s1, s2)
+        var numRows = 0
+        storages.foreach(r => {
+          r.iterator.foreach(c => {
+        	val row = c.getFieldsAsList()
           
-          colBuilders(0).append(
+            colBuilders(0).append(
               row.get(0).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(0))
-          colBuilders(1).append(
+            colBuilders(1).append(
               row.get(1).asInstanceOf[Text].toString, objInspectors(1))
-          colBuilders(2).append(
-              row.get(2).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(2))
-        })
-
-        s2.iterator.foreach(c => {
-          val row = c.getFieldsAsList()
-          
-          colBuilders(0).append(
-              row.get(0).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(0))
-          colBuilders(1).append(
-              row.get(1).asInstanceOf[Text].toString, objInspectors(1))
-          colBuilders(2).append(
-              row.get(2).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(2))
+            
+            jobName match {
+        	  case "item_view" => 
+        	    colBuilders(2).append(
+        	      row.get(2).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(2))
+        	  case "subcategory_view" => 
+        	    colBuilders(2).append(
+        	      row.get(2).asInstanceOf[Text].toString, objInspectors(2))
+        	  case _ => throw new Exception("unkown job name " + jobName)
+        	}
+            colBuilders(3).append(
+              row.get(3).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(3))
+          })
+          numRows += r.size
         })
         
         val columns = colBuilders.map(_.build)

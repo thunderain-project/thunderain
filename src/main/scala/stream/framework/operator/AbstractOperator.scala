@@ -8,7 +8,7 @@ import spark.streaming.Seconds
 import stream.framework.Event
 
 abstract class AbstractOperator {
-  def process(stream: DStream[Event], f: String => Array[String] = null)
+  def process(stream: DStream[Event])
   
   def windowStream[U: ClassManifest](stream: DStream[U],
 		  window: (Option[Long], Option[Long])) = {  

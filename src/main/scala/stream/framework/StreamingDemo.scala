@@ -10,7 +10,6 @@ import spark.streaming.StreamingContext
 import spark.streaming.Seconds
 
 object StreamingDemo {
-  
   def main(args: Array[String]) {
     if (args.length < 2) {
       println("StreamingDemo conf/properties.xml conf/log4j.properties")
@@ -22,7 +21,7 @@ object StreamingDemo {
     val sharkThread = new Thread("SharkServer") {
       setDaemon(true)
       override def run() {
-        SharkEnv.init()
+        SharkEnv.initWithSharkContext("Streaming Demo with Shark")
         sparkEnv = SparkEnv.get
         SharkServer.main(Array())
       }
@@ -32,7 +31,7 @@ object StreamingDemo {
     
     PropertyConfigurator.configure(args(1))
     
-    System.setProperty("spark.cleaner.ttl", "3600")
+    System.setProperty("spark.cleaner.ttl", "360")
     
     //parse the conf file
     FrameworkEnv.parseConfig(args(0))

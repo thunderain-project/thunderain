@@ -5,6 +5,7 @@
         <operator type="count" class="stream.framework.operator.CountOperator"/>
         <operator type="distinct_aggregate_count" class="stream.framework.operator.DistinctAggregateCountOperator"/>
         <operator type="aggregate" class="stream.framework.operator.AggregateOperator"/>
+        <operator type="join_count" class="example.weblog.operator.JoinCountOperator"/>
     </operators>
     <application>
         <category>clickstream</category>
@@ -22,22 +23,47 @@
         </items>
         <jobs>
             <job name="page_view" type="count">
-                <property window="30" slide="10" hierarchy="true"/>
+                <property window="30" slide="10"/>
                 <key>dest_url</key>
                 <output>stream.framework.output.StdEventOutput</output>
             </job>
             <job name="user_visit_count" type="distinct_aggregate_count">
-                <property window="30" slide="10" hierarchy="true"/>
+                <property window="30" slide="10"/>
                 <key>dest_url</key>
                 <value>source_ip</value>
                 <output>stream.framework.output.StdEventOutput</output>
             </job>
             <job name="user_visit" type="aggregate">
-                <property window="30" slide="10" hierarchy="true"/>
+                <property window="30" slide="10"/>
                 <key>dest_url</key>
                 <value>source_ip</value>
                 <output>stream.framework.output.StdEventOutput</output>
             </job>
         </jobs>
     </application>
+    <!--application>
+        <category>weblog</category>
+        <parser>example.weblog.WebLogParser</parser>
+        <items>
+            <item>source_ip</item>
+            <item>cookie_id</item>
+            <item>visit_date</item>
+            <item>item_id</item>
+            <item>referrer</item>
+            <item>agent</item>
+        </items>
+        <jobs>
+            <job name="item_view" type="join_count">
+                <property window="30"/>
+                <key>item_id</key>
+                <output>stream.framework.output.StdEventOutput</output>
+            </job>
+            <job name="subcategory_view" type="join_count">
+                <property window="30"/>
+                <key>item_id</key>
+                <output>stream.framework.output.StdEventOutput</output>
+            </job>
+
+        </jobs>
+    </application-->
 </applications>

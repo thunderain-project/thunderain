@@ -15,7 +15,7 @@ object FrameworkEnv {
   val operators = new mutable.HashMap[String, String]
   
   //hash map for all applications in one framework
-  val apps = new mutable.HashMap[String, AppEnv]
+  val apps = new mutable.HashMap[String, App]
   
   def parseConfig(xmlFilePath: String) {
     val xmlFile = XML.load(xmlFilePath)
@@ -28,24 +28,19 @@ object FrameworkEnv {
     xmlFile match {
       case <applications>{allApps @ _*}</applications> =>
         for (appConf @ <application>{_*}</application> <- allApps) {
-          val app = new AppEnv(appConf)
+          val app = new App(appConf)
           apps += ((app.category, app))
           
         }
     } 
   }
   
-  def setHierarchyFunc(app: String, job: String, f: String => Array[String]) {
-    apps(app).jobfuncs += ((job, f))
-  }
-  
-  class AppEnv(conf: Node) extends Serializable {
+  class App(conf: Node) extends Serializable {
     var category: String = _
     private var parser: AbstractEventParser = _
     private var items: Array[String] = _
     
     val jobs = new mutable.HashMap[String, AbstractOperator]
-    val jobfuncs = new mutable.HashMap[String, String => Array[String]]
     
     parseAppConf(conf)
     
@@ -78,7 +73,7 @@ object FrameworkEnv {
     def process(stream: DStream[String]) {
       val eventStream = stream.map(s => parser.parseEvent(s, items))
       
-      jobs.foreach(j => j._2.process(eventStream, jobfuncs.getOrElse(j._1, null)))
+      jobs.foreach(j => j._2.process(eventStream))
     }
   }
 }
