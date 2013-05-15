@@ -26,7 +26,7 @@ class JoinCountOperator extends CountOperator {
       case "item_view" => 
         itemStream.map(r => (r._2._2, r._2._1)).countByValue()
       case "subcategory_view" =>
-        itemStream.flatMap(r => splitCategory(r._2._2)).countByValue()
+        itemStream.map(r => (r._2._2, r._2._2)).countByValue()
       case _ => throw new Exception("unknown job name " + config.name)
     }
     

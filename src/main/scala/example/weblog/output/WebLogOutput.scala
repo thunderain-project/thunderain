@@ -84,25 +84,27 @@ class WebLogOutput extends AbstractEventOutput {
         storages.foreach(r => {
           r.iterator.foreach(c => {
         	val row = c.getFieldsAsList()
-          
-            colBuilders(0).append(
-              row.get(0).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(0))
-            colBuilders(1).append(
-              row.get(1).asInstanceOf[Text].toString, objInspectors(1))
             
-            jobName match {
-        	  case "item_view" => 
-        	    colBuilders(2).append(
-        	      row.get(2).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(2))
-        	  case "subcategory_view" => 
-        	    colBuilders(2).append(
-        	      row.get(2).asInstanceOf[Text].toString, objInspectors(2))
-        	  case _ => throw new Exception("unkown job name " + jobName)
+        	if (row.get(1) != null && row.get(2) != null) {
+              colBuilders(0).append(
+                row.get(0).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(0))
+              colBuilders(1).append(
+                row.get(1).asInstanceOf[Text].toString, objInspectors(1))
+            
+              jobName match {
+        	    case "item_view" => 
+        	      colBuilders(2).append(
+        	        row.get(2).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(2))
+        	    case "subcategory_view" => 
+        	      colBuilders(2).append(
+        	        row.get(2).asInstanceOf[Text].toString, objInspectors(2))
+        	    case _ => throw new Exception("unkown job name " + jobName)
+        	  }
+              colBuilders(3).append(
+                row.get(3).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(3))
+              numRows += 1
         	}
-            colBuilders(3).append(
-              row.get(3).asInstanceOf[LongWritable].get: java.lang.Long, objInspectors(3))
           })
-          numRows += r.size
         })
         
         val columns = colBuilders.map(_.build)
