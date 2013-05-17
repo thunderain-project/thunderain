@@ -13,7 +13,6 @@ import shark.memstore.TableStats
 import spark.RDD
 import spark.SparkContext._
 import spark.streaming.DStream
-import spark.rdd.UnionRDD
 import spark.storage.StorageLevel
 
 import stream.framework.output.AbstractEventOutput
@@ -21,7 +20,6 @@ import stream.framework.output.AbstractEventOutput
 class WebLogOutput extends AbstractEventOutput {
   private var outputName: String = _
   private var jobName: String = _
-  val PART_NUM = Some(System.getenv("OUTPUT_PARTITION_NUM")).getOrElse("4").toInt
   val cleanBefore = Some(System.getenv("DATA_CLEAN_TTL")).getOrElse("600").toInt
   private var types: Array[String] = _
   
@@ -40,10 +38,11 @@ class WebLogOutput extends AbstractEventOutput {
     stream.foreach(r => {      
       val statAccum = SharkEnv.sc.accumulableCollection(mutable.ArrayBuffer[(Int, TableStats)]())
       
-      val tblRdd = SharkEnv.cache.get(outputName) match {
-        case None => buildTableRdd(r, statAccum)
-        case Some(s) => zipTableRdd(s.asInstanceOf[RDD[TableStorage]], r, statAccum)
-      }
+//      val tblRdd = SharkEnv.cache.get(outputName) match {
+//        case None => buildTableRdd(r, statAccum)
+//        case Some(s) => zipTableRdd(s.asInstanceOf[RDD[TableStorage]], r, statAccum)
+//      }
+      val tblRdd = buildTableRdd(r, statAccum)
       tblRdd.foreach(_ => Unit)
          
       // put rdd and statAccum to cache manager

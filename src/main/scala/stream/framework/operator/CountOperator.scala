@@ -44,7 +44,7 @@ class CountOperator extends AbstractOperator with Serializable with OperatorConf
     outputCls = try {
       Class.forName(config.outputClsName).newInstance().asInstanceOf[AbstractEventOutput]
     } catch {
-      case _ => throw new Exception("class" + config.outputClsName + " new instance failed")
+      case _ => throw new Exception("class " + config.outputClsName + " new instance failed")
     }
     outputCls.setOutputName(config.name)
   }

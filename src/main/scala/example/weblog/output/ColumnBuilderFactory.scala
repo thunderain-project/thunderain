@@ -5,7 +5,7 @@ import shark.memstore.UncompressedColumnFormat._
 import shark.memstore.ColumnStats._
 
 object ColumnBuilderFactory {
-  val COLUMN_SIZE = 100
+  val COLUMN_SIZE = 1000
   
   def newColumnBuilder(primitiveType: String): ColumnBuilder = {
     primitiveType match {
