@@ -4,7 +4,7 @@ name := "streaming-demo"
 
 version := "0.0.1"
 
-scalaVersion := "2.9.2"
+scalaVersion := "2.9.3"
 
 retrieveManaged := true
 
@@ -18,11 +18,11 @@ unmanagedJars in Compile <++= baseDirectory map { base =>
   customJars.classpath.filter(!_.toString.contains("guava"))
 }
 
-libraryDependencies += "org.spark-project" %% "spark-core" % "0.7.1-SNAPSHOT"
+libraryDependencies += "org.spark-project" %% "spark-core" % "0.8.0-SNAPSHOT"
 
-libraryDependencies += "org.spark-project" %% "spark-streaming" % "0.7.1-SNAPSHOT"
+libraryDependencies += "org.spark-project" %% "spark-streaming" % "0.8.0-SNAPSHOT"
 
-libraryDependencies += "edu.berkeley.cs.amplab" %% "shark" % "0.2-SNAPSHOT"
+libraryDependencies += "edu.berkeley.cs.amplab" %% "shark" % "0.7.0-SNAPSHOT"
 
 resolvers ++= Seq(
    "Maven Repository" at "http://repo1.maven.org/maven2",

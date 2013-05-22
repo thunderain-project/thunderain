@@ -8,4 +8,4 @@ export DATA_CLEAN_TTL=600
 # kafka configuration
 export ZK_QUORUM=localhost:2181
 export KAFKA_GROUP=test
-export KAFKA_INPUT_NUM=4
+export KAFKA_INPUT_NUM=1

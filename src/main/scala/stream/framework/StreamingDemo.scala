@@ -16,7 +16,7 @@ object StreamingDemo {
       System.exit(1)
     }
     
-    System.setProperty("spark.cleaner.ttl", "600")
+    System.setProperty("spark.cleaner.ttl", "3600")
     System.setProperty("spark.stream.concurrentJobs", "2")
     
     var sparkEnv: SparkEnv = null

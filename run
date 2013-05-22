@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCALA_VERSION=2.9.2
+SCALA_VERSION=2.9.3
 STREAMING_DEMO_VERSION=0.0.1
 
 FWDIR="$(cd `dirname $0`; pwd)"
@@ -82,7 +82,7 @@ for jar in `find $HIVE_HOME/lib -name '*jar'`; do
   fi
 done
 
-
+JAVA_OPTS="-server -XX:PermSize=64M -XX:MaxPermSize=128m -Xss10m"
 # Figure out whether to run our class with java or with the scala launcher.
 # In most cases, we'd prefer to execute our process with java because scala
 # creates a shell script as the parent of its Java process, which makes it

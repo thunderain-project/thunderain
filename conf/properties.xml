@@ -7,7 +7,7 @@
         <operator type="aggregate" class="stream.framework.operator.AggregateOperator"/>
         <operator type="join_count" class="example.weblog.operator.JoinCountOperator"/>
     </operators>
-    <application>
+    <!--application>
         <category>clickstream</category>
         <parser>example.clickstream.ClickEventParser</parser>
         <items>
@@ -40,8 +40,8 @@
                 <output>stream.framework.output.StdEventOutput</output>
             </job>
         </jobs>
-    </application>
-    <!--application>
+    </application-->
+    <application>
         <category>weblog</category>
         <parser>example.weblog.WebLogParser</parser>
         <items>
@@ -56,14 +56,14 @@
             <job name="item_view" type="join_count">
                 <property window="30"/>
                 <key>item_id</key>
-                <output>stream.framework.output.StdEventOutput</output>
+                <output>example.weblog.output.WebLogOutput</output>
             </job>
-            <job name="subcategory_view" type="join_count">
+            <!--job name="subcategory_view" type="join_count">
                 <property window="30"/>
                 <key>item_id</key>
                 <output>stream.framework.output.StdEventOutput</output>
-            </job>
+            </job-->
 
         </jobs>
-    </application-->
+    </application>
 </applications>
