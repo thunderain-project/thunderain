@@ -28,6 +28,8 @@ class WebLogOutput extends AbstractEventOutput {
   
   private var types: Array[String] = _
   val COLUMN_SIZE = 1000
+  private var checkpointTm = System.currentTimeMillis() / 1000
+  val CHECKPOINT_INTERVAL = 600
   
   override def setOutputName(name: String) {
     jobName = name
@@ -40,15 +42,6 @@ class WebLogOutput extends AbstractEventOutput {
     }
   }
   
-  private def recursiveFetchRdd(rdd: RDD[_], q: mutable.ArrayBuffer[Int]) {
-    for (d <- rdd.dependencies) {
-      println(">>>>rdd " + d.rdd)
-      q += 1
-      recursiveFetchRdd(d.rdd, q)
-    }
-  }
-  
-  
   override def output(stream: DStream[_]) {
     stream.foreach(r => {      
       val statAccum = SharkEnv.sc.accumulableCollection(mutable.ArrayBuffer[(Int, TablePartitionStats)]())
@@ -56,10 +49,16 @@ class WebLogOutput extends AbstractEventOutput {
       val tblRdd = if (cleanBefore == -1) {
         buildTableRdd(r, statAccum)
       } else {
-        SharkEnv.memoryMetadataManager.get(outputName) match {
+        val rdd = SharkEnv.memoryMetadataManager.get(outputName) match {
           case None => buildTableRdd(r, statAccum)
           case Some(s) => zipTableRdd(s, r, statAccum)
         }
+        val currTm = System.currentTimeMillis() / 1000
+        if (currTm - checkpointTm >= CHECKPOINT_INTERVAL) {
+          rdd.checkpoint()
+          checkpointTm = currTm
+        }
+        rdd
       }
       
       tblRdd.persist(StorageLevel.MEMORY_ONLY)
