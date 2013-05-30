@@ -11,15 +11,20 @@ import spark.streaming.Seconds
 
 object StreamingDemo {
   def main(args: Array[String]) {
-    if (args.length < 3) {
-      println("StreamingDemo conf/properties.xml conf/log4j.properties conf/fairscheduler.xml")
+    if (args.length < 2) {
+      println("StreamingDemo conf/properties.xml conf/log4j.properties <conf/fairscheduler.xml>")
       System.exit(1)
     }
     
     System.setProperty("spark.cleaner.ttl", "600")
     System.setProperty("spark.stream.concurrentJobs", "2")
     System.setProperty("spark.cluster.schedulingmode", "FAIR")
-    System.setProperty("spark.fairscheduler.allocation.file", args(2))
+    
+    var schedulerEnabled = false
+    if (args.length > 2) {
+      System.setProperty("spark.fairscheduler.allocation.file", args(2))
+      schedulerEnabled = true
+    }
     
     var sparkEnv: SparkEnv = null
     //start shark server thread
@@ -27,7 +32,9 @@ object StreamingDemo {
       setDaemon(true)
       override def run() {
         SharkEnv.initWithSharkContext("Streaming Demo with Shark")
-        SharkEnv.sc.addLocalProperties("spark.scheduler.cluster.fair.pool", "1")
+        if (schedulerEnabled == true) {
+          SharkEnv.sc.addLocalProperties("spark.scheduler.cluster.fair.pool", "1")
+        }
         sparkEnv = SparkEnv.get
         SharkServer.main(Array())
       }
@@ -44,7 +51,9 @@ object StreamingDemo {
     SparkEnv.set(sparkEnv)
     val ssc =  new StreamingContext(SharkEnv.sc, Seconds(10))
     ssc.checkpoint("checkpoint")
-    ssc.sparkContext.addLocalProperties("spark.scheduler.cluster.fair.pool", "2")
+    if (schedulerEnabled == true) {
+      ssc.sparkContext.addLocalProperties("spark.scheduler.cluster.fair.pool", "2")
+    }
 
     //register exit hook
     Runtime.getRuntime().addShutdownHook(

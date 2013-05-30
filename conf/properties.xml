@@ -56,7 +56,7 @@
             <job name="item_view" type="join_count">
                 <property window="30"/>
                 <key>item_id</key>
-                <output>example.weblog.output.WebLogOutput</output>
+                <output>example.weblog.output.WebLogTachyonOutput</output>
             </job>
             <!--job name="subcategory_view" type="join_count">
                 <property window="30"/>

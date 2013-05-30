@@ -24,6 +24,8 @@ libraryDependencies += "org.spark-project" %% "spark-streaming" % "0.8.0-SNAPSHO
 
 libraryDependencies += "edu.berkeley.cs.amplab" %% "shark" % "0.7.0-SNAPSHOT"
 
+libraryDependencies += "org.tachyonproject" % "tachyon" % "0.2.1"
+
 resolvers ++= Seq(
    "Maven Repository" at "http://repo1.maven.org/maven2",
    "Akka Repository" at "http://repo.akka.io/releases/",
