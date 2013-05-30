@@ -56,6 +56,6 @@ class CountOperator extends AbstractOperator with Serializable with OperatorConf
     val windowedStream = windowStream(stream, (config.window, config.slide))
     val resultStream = windowedStream.map(r => r.keyMap(config.key)).countByValue()
     
-    outputCls.output(resultStream)
+    outputCls.output(outputCls.preprocessOutput(resultStream))
   }
 }

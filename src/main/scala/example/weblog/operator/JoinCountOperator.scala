@@ -30,7 +30,7 @@ class JoinCountOperator extends CountOperator {
       case _ => throw new Exception("unknown job name " + config.name)
     }
     
-    outputCls.output(resultStream)
+    outputCls.output(outputCls.preprocessOutput(resultStream))
   }
   
   def splitCategory(category: String) = {

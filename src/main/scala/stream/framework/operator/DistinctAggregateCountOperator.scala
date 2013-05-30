@@ -67,6 +67,6 @@ extends AbstractOperator with Serializable with OperatorConfig {
       map(r => ((r.keyMap(config.key), r.keyMap(config.value)), 1)).
       reduceByKey((a, b) => a).map(_._1._1).countByValue()
     
-    outputCls.output(resultStream)
+    outputCls.output(outputCls.preprocessOutput(resultStream))
   }
 }

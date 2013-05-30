@@ -1,17 +1,12 @@
 package example.weblog.output
 
 import scala.collection.mutable
-
 import spark.RDD
 import spark.storage.StorageLevel
-
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector
 import org.apache.hadoop.io._
-
 import shark.SharkEnv
 import shark.SharkContext
 import shark.memstore2.TablePartition
-import shark.memstore2.column.ColumnBuilder
 import shark.memstore2.TablePartitionStats
 import spark.storage.StorageLevel
 

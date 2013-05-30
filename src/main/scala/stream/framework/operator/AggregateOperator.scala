@@ -58,6 +58,6 @@ class AggregateOperator extends AbstractOperator with Serializable with Operator
     val windowedStream = windowStream(stream, (config.window, config.slide)) 
     val resultStream = windowedStream.map(r => (r.keyMap(config.key), r.keyMap(config.value))).groupByKey()
     
-    outputCls.output(resultStream)
+    outputCls.output(outputCls.preprocessOutput(resultStream))
   }
 }

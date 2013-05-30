@@ -1,4 +1,4 @@
-package example.weblog.output
+package stream.framework.output
 
 import scala.collection.mutable
 
