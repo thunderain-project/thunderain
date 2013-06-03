@@ -68,7 +68,7 @@ object StreamingDemo {
     val group = System.getenv("KAFKA_GROUP")
     val apps = FrameworkEnv.apps
     /****************TODO. this should be modified later*******************/
-    //cause all the topics are in one DStream, first we should filter out
+    // because all the topics are in one DStream, first we should filter out
     // what topics to what application
     // because kafka stream currently do not support decode method
     // other than string decode, so currently workaround solution is:
