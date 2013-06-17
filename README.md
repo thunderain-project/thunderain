@@ -145,5 +145,3 @@ Ps.
 
 3. If you want to output processed data Shark readable TableRDD, you can take weblog example to implement your own one.
 4. Currently [Tachyon](https://github.com/amplab/tachyon) support is available in Thunderain, but there has some bugs related to Tachyon, it is recommended not to use Tachyon TableRDD output until it is stable.
-
-
