@@ -3,14 +3,13 @@ package thunderainproject.thunderain.framework.operator
 import scala.xml._
 
 import spark.streaming.DStream
-import spark.streaming.Duration
 import spark.streaming.StreamingContext._
 
 import thunderainproject.thunderain.framework.Event
 import thunderainproject.thunderain.framework.output.AbstractEventOutput
 
 
-class AggregateOperator extends AbstractOperator with Serializable with OperatorConfig {
+class AggregateOperator extends AbstractOperator with OperatorConfig {
   class AggregateOperatorConfig (
     val name: String,
     val window: Option[Long],
@@ -38,8 +37,8 @@ class AggregateOperator extends AbstractOperator with Serializable with Operator
     
     config = new AggregateOperatorConfig(
         nam, 
-        props(0) match {case Some(s) => Some(s.toLong); case None => None},
-        props(1) match {case Some(s) => Some(s.toLong); case None => None},
+        props(0) map { s => s.toLong },
+        props(1) map { s => s.toLong },
         key,
         value,
         output)

@@ -4,18 +4,15 @@ import scala.collection.mutable
 
 import shark.SharkEnv
 import shark.memstore2.column.ColumnBuilder
-import shark.memstore2.TablePartition
-import shark.memstore2.TablePartitionStats
+import shark.memstore2.{TablePartition, TablePartitionStats}
 
 import spark.RDD
 import spark.SparkContext._
-import spark.streaming.DStream
 import spark.storage.StorageLevel
+import spark.streaming.DStream
 
-import thunderainproject.thunderain.framework.output.{AbstractEventOutput, 
-  PrimitiveObjInspectorFactory, WritableObjectConvertFactory}
-
-import scala.Array.canBuildFrom
+import thunderainproject.thunderain.framework.output.{AbstractEventOutput, PrimitiveObjInspectorFactory, 
+  WritableObjectConvertFactory}
 
 abstract class TableRDDOutput extends AbstractEventOutput {
   val cleanBefore = if (System.getenv("DATA_CLEAN_TTL") == null) {

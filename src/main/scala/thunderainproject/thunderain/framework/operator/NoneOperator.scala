@@ -6,8 +6,7 @@ import spark.streaming.DStream
 
 import thunderainproject.thunderain.framework.Event
 
-
-class NoneOperator extends AbstractOperator with Serializable with OperatorConfig {
+class NoneOperator extends AbstractOperator with OperatorConfig {
   override def parseConfig(conf: Node) {}
   override def process(stream: DStream[Event]) {}
 }

@@ -4,12 +4,12 @@ import shark.{SharkEnv, SharkContext}
 
 import spark.streaming.DStream
 import spark.SparkContext._
+
 import thunderainproject.thunderain.framework.Event
 import thunderainproject.thunderain.framework.operator.CountOperator
-import scala.Array.canBuildFrom
 
 class JoinCountOperator extends CountOperator {
-  @transient lazy val itemCateRdd = SharkEnv.sc.asInstanceOf[SharkContext]
+  @transient lazy val itemCategoryRdd = SharkEnv.sc.asInstanceOf[SharkContext]
     .sql2rdd(
       "SELECT i_item_sk, i_category FROM item_ext")
     .map(r => (r.getLong(0).toLong, r.getString(1)))
@@ -19,7 +19,7 @@ class JoinCountOperator extends CountOperator {
     val windowedStream = windowStream(stream, (config.window, config.slide))
     val itemStream = windowedStream.map(e => 
       (e.keyMap(config.key).toLong, e.keyMap(config.key).toLong))
-      .transform(_.join(itemCateRdd))
+      .transform(_.join(itemCategoryRdd))
     
     val resultStream = config.name match {
       case "item_view" => 

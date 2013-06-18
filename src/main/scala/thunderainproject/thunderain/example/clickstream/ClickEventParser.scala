@@ -3,9 +3,7 @@ package thunderainproject.thunderain.example.clickstream
 import thunderainproject.thunderain.framework.parser.AbstractEventParser
 import thunderainproject.thunderain.framework.Event
 
-import scala.Array.canBuildFrom
-
-class ClickEventParser extends AbstractEventParser with Serializable {
+class ClickEventParser extends AbstractEventParser {
 
   override def parseEvent(event: String, schema: Array[String]) = {
     val parts = event.split("\\|")

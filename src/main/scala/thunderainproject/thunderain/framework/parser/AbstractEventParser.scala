@@ -2,7 +2,7 @@ package thunderainproject.thunderain.framework.parser
 
 import thunderainproject.thunderain.framework.Event
 
-abstract class AbstractEventParser {
+abstract class AbstractEventParser extends Serializable {
   
   /**
    * parse the input event string, should be implemented by derivative

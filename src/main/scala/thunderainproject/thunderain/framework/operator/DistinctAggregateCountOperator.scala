@@ -9,7 +9,7 @@ import thunderainproject.thunderain.framework.Event
 import thunderainproject.thunderain.framework.output.AbstractEventOutput
 
 class DistinctAggregateCountOperator 
-extends AbstractOperator with Serializable with OperatorConfig {
+extends AbstractOperator with OperatorConfig {
     class DACOperatorConfig(
     val name: String,
     val window: Option[Long],
@@ -37,8 +37,8 @@ extends AbstractOperator with Serializable with OperatorConfig {
     
     config = new DACOperatorConfig(
         nam, 
-        props(0) match {case Some(s) => Some(s.toLong); case None => None},
-        props(1) match {case Some(s) => Some(s.toLong); case None => None},
+        props(0) map { s => s.toLong },
+        props(1) map { s => s.toLong },
         key,
         value,
         output)

@@ -2,28 +2,28 @@ package thunderainproject.thunderain.framework
 
 import org.apache.log4j.PropertyConfigurator
 
-import shark.SharkServer
-import shark.SharkEnv
+import shark.{SharkEnv, SharkServer}
 
 import spark.SparkEnv
 import spark.streaming.StreamingContext
 import spark.streaming.Seconds
 
-object StreamingDemo {
+object Thunderain {
   def main(args: Array[String]) {
     if (args.length < 2) {
-      println("StreamingDemo conf/properties.xml conf/log4j.properties <conf/fairscheduler.xml>")
+      println("StreamingDemo conf/properties.xml conf/log4j.properties [conf/fairscheduler.xml]")
       System.exit(1)
     }
     
     System.setProperty("spark.cleaner.ttl", "600")
     System.setProperty("spark.stream.concurrentJobs", "2")
-    System.setProperty("spark.cluster.schedulingmode", "FAIR")
     
-    var schedulerEnabled = false
-    if (args.length > 2) {
+    val schedulerEnabled = if (args.length > 2) {
+      System.setProperty("spark.cluster.schedulingmode", "FAIR")
       System.setProperty("spark.fairscheduler.allocation.file", args(2))
-      schedulerEnabled = true
+      true
+    } else {
+      false
     }
     
     var sparkEnv: SparkEnv = null
@@ -67,6 +67,7 @@ object StreamingDemo {
     val zkQuorum = System.getenv("ZK_QUORUM")
     val group = System.getenv("KAFKA_GROUP")
     val apps = FrameworkEnv.apps
+    
     /****************TODO. this should be modified later*******************/
     // because all the topics are in one DStream, first we should filter out
     // what topics to what application
@@ -76,8 +77,7 @@ object StreamingDemo {
     // "|||" is a delimiter, category is topic name, message is content
     val kafkaInputs = System.getenv("KAFKA_INPUT_NUM").toInt
     val lines = (1 to kafkaInputs).map(_ => 
-      ssc.kafkaStream[String](zkQuorum, group, apps.map(e => (e._1, 1))))
-    .toArray
+      ssc.kafkaStream[String](zkQuorum, group, apps.map(e => (e._1, 1)))).toArray
     val union = ssc.union(lines)
          
     val streams = apps.map(e => (e._1, union.filter(s => s.startsWith(e._1))))

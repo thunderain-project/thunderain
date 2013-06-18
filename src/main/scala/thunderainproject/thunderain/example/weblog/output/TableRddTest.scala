@@ -9,11 +9,9 @@ import org.apache.hadoop.io._
 
 import shark.SharkEnv
 import shark.SharkContext
-import shark.memstore2.TablePartition
-import shark.memstore2.TablePartitionStats
+import shark.memstore2.{TablePartition, TablePartitionStats}
 
 object TableRddTest {
-
   def main(args: Array[String]) {
     System.setProperty("spark.cleaner.ttl", "600")
     SharkEnv.initWithSharkContext("Rdd Serde test")

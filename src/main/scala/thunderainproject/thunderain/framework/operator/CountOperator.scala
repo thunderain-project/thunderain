@@ -4,12 +4,11 @@ import scala.xml._
 
 import spark.streaming.DStream
 import spark.streaming.StreamingContext._
-import spark.streaming.Seconds
 
 import thunderainproject.thunderain.framework.Event
 import thunderainproject.thunderain.framework.output.AbstractEventOutput
 
-class CountOperator extends AbstractOperator with Serializable with OperatorConfig {
+class CountOperator extends AbstractOperator with OperatorConfig {
   
   class CountOperatorConfig (
     val name: String,
@@ -36,8 +35,8 @@ class CountOperator extends AbstractOperator with Serializable with OperatorConf
     
     config = new CountOperatorConfig(
         nam, 
-        props(0) match {case Some(s) => Some(s.toLong); case None => None},
-        props(1) match {case Some(s) => Some(s.toLong); case None => None},
+        props(0) map { s => s.toLong },
+        props(1) map { s => s.toLong },
         key,
         output)
     

@@ -3,9 +3,7 @@ package thunderainproject.thunderain.example.weblog
 import thunderainproject.thunderain.framework.Event
 import thunderainproject.thunderain.framework.parser.AbstractEventParser
 
-import scala.Array.canBuildFrom
-
-class WebLogParser extends AbstractEventParser with Serializable {
+class WebLogParser extends AbstractEventParser {
   override def parseEvent(event: String, schema: Array[String]) = {
     val filter = "(.*) - - (.*) \\[(.*)\\] \".*item=(\\d+).*\".* (http.*) \"(.*)\"".r
     
@@ -13,8 +11,7 @@ class WebLogParser extends AbstractEventParser with Serializable {
     	val filter(params @ _*) = event
     	new Event(System.currentTimeMillis() / 1000, schema.zip(params).toMap)
     } catch {
-      case _ => new Event(System.currentTimeMillis()/ 1000,
-          schema.map(s => "").zip(schema).toMap)
+      case _ => new Event(System.currentTimeMillis()/ 1000, schema.map(s => "").zip(schema).toMap)
     }
   }
 }

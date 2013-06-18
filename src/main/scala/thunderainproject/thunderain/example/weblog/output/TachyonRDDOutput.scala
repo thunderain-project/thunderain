@@ -6,19 +6,17 @@ import scala.collection.mutable
 
 import shark.SharkEnv
 import shark.memstore2.column.ColumnBuilder
-import shark.memstore2.TablePartition
-import shark.memstore2.TablePartitionStats
+import shark.memstore2.{TablePartition, TablePartitionStats}
 
 import spark.RDD
 import spark.SparkContext._
 import spark.streaming.DStream
 import spark.storage.StorageLevel
 
-import thunderainproject.thunderain.framework.output.{AbstractEventOutput, 
-  PrimitiveObjInspectorFactory, WritableObjectConvertFactory}
+import thunderainproject.thunderain.framework.output.{AbstractEventOutput, PrimitiveObjInspectorFactory, 
+  WritableObjectConvertFactory}
 
 import tachyon.client.{TachyonClient, OpType}
-import scala.Array.canBuildFrom
 
 abstract class TachyonRDDOutput extends AbstractEventOutput {
   val tachyonURL = System.getenv("TACHYON_MASTER")
@@ -137,8 +135,7 @@ abstract class TachyonRDDOutput extends AbstractEventOutput {
   }
   
   private def zipTachyonRdd(oldRdd: RDD[_], newRdd: RDD[_],
-    stat: spark.Accumulable[mutable.ArrayBuffer[(Int, TablePartitionStats)], (Int, TablePartitionStats)]) = {
-    
+    stat: spark.Accumulable[mutable.ArrayBuffer[(Int, TablePartitionStats)], (Int, TablePartitionStats)]) = { 
     val zippedRdd = oldRdd.asInstanceOf[RDD[TablePartition]].zipPartitions(
       (i1: Iterator[TablePartition], i2: Iterator[Any]) => {
         val objInspectors = formats.map(PrimitiveObjInspectorFactory.newPrimitiveObjInspector(_))
@@ -178,7 +175,6 @@ abstract class TachyonRDDOutput extends AbstractEventOutput {
         Iterator(new TablePartition(numRows, colBuilders.map(_.build)))
       }, newRdd.asInstanceOf[RDD[Any]]).mapPartitionsWithIndex((index, iter) => {
         val partition = iter.next()
-        println(">>>row number" + partition.numRows)
         partition.toTachyon.zipWithIndex.foreach(r => {
           val col = table.getRawColumn(r._2)
           var file = col.getPartition(index)

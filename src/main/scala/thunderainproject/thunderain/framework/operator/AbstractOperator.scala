@@ -1,11 +1,10 @@
 package thunderainproject.thunderain.framework.operator
 
-import spark.streaming.DStream
-import spark.streaming.Seconds
+import spark.streaming.{DStream, Seconds}
 
 import thunderainproject.thunderain.framework.Event
 
-abstract class AbstractOperator {
+abstract class AbstractOperator extends Serializable {
   def process(stream: DStream[Event])
   
   def windowStream[U: ClassManifest](stream: DStream[U],
