@@ -16,15 +16,10 @@
  * limitations under the License.
  */
 
-package thunderainproject.thunderain.framework.operator
+CREATE TABLE item_view_cached(time BIGINT, category STRING, item BIGINT, count BIGINT)
+ROW FORMAT SERDE "shark.memstore2.ColumnarSerDe"
+TBLPROPERTIES ("shark.cache" = "heap");
 
-import scala.xml._
-
-import spark.streaming.DStream
-
-import thunderainproject.thunderain.framework.Event
-
-class NoneOperator extends AbstractOperator with OperatorConfig {
-  override def parseConfig(conf: Node) {}
-  override def process(stream: DStream[Event]) {}
-}
+CREATE TABLE subcategory_view_cached(time BIGINT, category STRING, subcategory STRING, count BIGINT)
+ROW FORMAT SERDE "shark.memstore2.ColumnarSerDe"
+TBLPROPERTIES ("shark.cache" = "heap");

@@ -2,14 +2,14 @@
 
 <applications>
     <operators>
-        <operator type="count" class="stream.framework.operator.CountOperator"/>
-        <operator type="distinct_aggregate_count" class="stream.framework.operator.DistinctAggregateCountOperator"/>
-        <operator type="aggregate" class="stream.framework.operator.AggregateOperator"/>
-        <operator type="join_count" class="example.weblog.operator.JoinCountOperator"/>
+        <operator type="count" class="thunderainproject.thunderain.framework.operator.CountOperator"/>
+        <operator type="distinct_aggregate_count" class="thunderainproject.thunderain.framework.operator.DistinctAggregateCountOperator"/>
+        <operator type="aggregate" class="thunderainproject.thunderain.framework.operator.AggregateOperator"/>
+        <operator type="join_count" class="thunderainproject.thunderain.example.weblog.operator.JoinCountOperator"/>
     </operators>
-    <!--application>
+    <application>
         <category>clickstream</category>
-        <parser>example.clickstream.ClickEventParser</parser>
+        <parser>thunderainproject.thunderain.example.clickstream.ClickEventParser</parser>
         <items>
             <item>source_ip</item>
             <item>dest_url</item>
@@ -25,25 +25,25 @@
             <job name="page_view" type="count">
                 <property window="30" slide="10"/>
                 <key>dest_url</key>
-                <output>stream.framework.output.StdEventOutput</output>
+                <output>thunderainproject.thunderain.framework.output.StdEventOutput</output>
             </job>
             <job name="user_visit_count" type="distinct_aggregate_count">
                 <property window="30" slide="10"/>
                 <key>dest_url</key>
                 <value>source_ip</value>
-                <output>stream.framework.output.StdEventOutput</output>
+                <output>thunderainproject.thunderain.framework.output.StdEventOutput</output>
             </job>
             <job name="user_visit" type="aggregate">
                 <property window="30" slide="10"/>
                 <key>dest_url</key>
                 <value>source_ip</value>
-                <output>stream.framework.output.StdEventOutput</output>
+                <output>thunderainproject.thunderain.framework.output.StdEventOutput</output>
             </job>
         </jobs>
-    </application-->
+    </application>
     <application>
         <category>weblog</category>
-        <parser>example.weblog.WebLogParser</parser>
+        <parser>thunderainproject.thunderain.example.weblog.WebLogParser</parser>
         <items>
             <item>source_ip</item>
             <item>cookie_id</item>
@@ -56,13 +56,13 @@
             <job name="item_view" type="join_count">
                 <property window="30"/>
                 <key>item_id</key>
-                <output>example.weblog.output.WebLogTachyonOutput</output>
+                <output>thunderainproject.thunderain.example.weblog.output.WebLogOutput</output>
             </job>
-            <!--job name="subcategory_view" type="join_count">
+            <job name="subcategory_view" type="join_count">
                 <property window="30"/>
                 <key>item_id</key>
-                <output>stream.framework.output.StdEventOutput</output>
-            </job-->
+                <output>thunderainproject.thunderain.example.weblog.output.WebLogOutput</output>
+            </job>
 
         </jobs>
     </application>

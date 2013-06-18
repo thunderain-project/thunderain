@@ -1,10 +1,48 @@
 #!/bin/bash
 
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 SCALA_VERSION=2.9.3
-STREAMING_DEMO_VERSION=0.0.1
+THUNDERAIN_VERSION=0.1.0
 
 FWDIR="$(cd `dirname $0`; pwd)"
 
+# add environment
+if [ -f "$FWDIR/conf/thunderain-env.sh" ]; then
+  . $FWDIR/conf/thunderain-env.sh
+fi
+
+if [ -f "$FWDIR/conf/shark-env.sh" ]; then
+  . $FWDIR/conf/shark-env.sh
+fi
+
+if [ "x$HIVE_HOME" == "x" ] ; then
+    echo "No HIVE_HOME specified. Please set HIVE_HOME."
+    exit 1
+fi
+
+if [ ! -f $HIVE_HOME/lib/hive-exec-0*.jar ] ; then
+  echo "Cannot find $HIVE_HOME/lib/hive-exec-0.9.0.jar."
+  echo "Are you sure your HIVE_HOME is set correctly?"
+  echo "HIVE_HOME = $HIVE_HOME"
+  exit 1
+fi
+
+#
 if [ "$LAUNCH_WITH_SCALA" == "1" ]; then
   if [ `command -v scala` ]; then
     RUNNER="scala"
@@ -34,44 +72,30 @@ else
   fi
 fi
 
-
-# add environment
-
-if [ -f "$FWDIR/conf/streaming-demo-env.sh" ]; then
-    . $FWDIR/conf/streaming-demo-env.sh
+# Check for optionally specified configuration file path
+if [ "x$HIVE_CONF_DIR" == "x" ] ; then
+  HIVE_CONF_DIR="$HIVE_HOME/conf"
 fi
 
-if [ -f "$FWDIR/conf/shark-env.sh" ]; then
-    . $FWDIR/conf/shark-env.sh
-fi
-
-if [ "x$HIVE_HOME" == "x" ] ; then
-    echo "No HIVE_HOME specified. Please set HIVE_HOME."
-    exit 1
-fi
-
-if [ ! -f $HIVE_HOME/lib/hive-exec-0*.jar ] ; then
-  echo "Cannot find $HIVE_HOME/lib/hive-exec-0.9.0.jar."
-  echo "Are you sure your HIVE_HOME is set correctly?"
-  echo "HIVE_HOME = $HIVE_HOME"
-  exit 1
+if [ -f "${HIVE_CONF_DIR}/hive-env.sh" ]; then
+  . "${HIVE_CONF_DIR}/hive-env.sh"
 fi
 
 # Build up classpath
 CLASSPATH+=":$FWDIR/conf"
-CLASSPATH+=":$FWDIR/target/scala-$SCALA_VERSION/streaming-demo_$SCALA_VERSION-$STREAMING_DEMO_VERSION.jar"
+CLASSPATH+=":$FWDIR/target/scala-$SCALA_VERSION/thunderain_$SCALA_VERSION-$THUNDERAIN_VERSION.jar"
 
 if [ -e "$FWDIR/lib_managed" ]; then
   for jar in `find $FWDIR/lib_managed -name "*.jar"`
   do
-      CLASSPATH+=":$jar"
+    CLASSPATH+=":$jar"
   done
 fi
 
 if [ -e "$FWDIR/lib" ]; then
   for jar in `find $FWDIR/lib -name "*.jar"`
   do
-      CLASSPATH+=":$jar"
+    CLASSPATH+=":$jar"
   done
 fi
 
@@ -82,7 +106,22 @@ for jar in `find $HIVE_HOME/lib -name '*jar'`; do
   fi
 done
 
-JAVA_OPTS="-server -XX:PermSize=64M -XX:MaxPermSize=128m -Xss10m"
+CLASSPATH+=:$HIVE_CONF_DIR
+
+if [ "x$HADOOP_HOME" == "x" ] ; then
+  echo "No HADOOP_HOME specified. Shark will run in local-mode"
+else
+  CLASSPATH+=":$HADOOP_HOME/conf"
+fi
+
+SPARK_CLASSPATH=$CLASSPATH
+
+export SPARK_CLASSPATH
+
+JAVA_OPTS="-server -XX:PermSize=64M -XX:MaxPermSize=128m -Xss10m "
+JAVA_OPTS+="$SPARK_JAVA_OPTS"
+JAVA_OPTS+=" -Xms$SHARK_MASTER_MEM -Xmx$SHARK_MASTER_MEM "
+
 # Figure out whether to run our class with java or with the scala launcher.
 # In most cases, we'd prefer to execute our process with java because scala
 # creates a shell script as the parent of its Java process, which makes it

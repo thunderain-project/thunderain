@@ -1,26 +1,26 @@
-streaming-demo
+Thunderain
 ==============
 
-A Spark Streaming demo framework is a framework for streaming data counting and aggregating, like Twitter Rainbird, but has more feature compared to it.
+**Thunderain**: a Real-Time Analytical Processing (RTAP) - a framework for streaming data counting and aggregating, like [Twitter Rainbird](http://www.slideshare.net/kevinweil/rainbird-realtime-analytics-at-twitter-strata-2011), but has more feature compared to it:
 
-* it has several kinds of operators, not only counter operator (like in Rainbird). Also user can implement self-defined operators for your own needs.
-* it can process different topics of Kafka message with topic specific application in one framework.
-* it is highly configurable with XML file.
-* it embeds SharkServer in its framwork, users can output streaming result to Shark's TableRDD and connect to SharkServer for real-time query.
+* It has several kinds of operators, not only counter operator (which is in Rainbird). Also user can implement self-defined operators for your own needs.
+* It can process different topics of Kafka message with topic specific applications in one framework.
+* It is highly configurable with XML file.
+* It embeds SharkServer in its framwork, users can output streaming result to Shark's TableRDD and connect to SharkServer for real-time query.
 
 ---
 
-The whole architecture of streaming demo is like this:
+The whole architecture of Thunderain is like this:
 
 <img src="https://dl.dropboxusercontent.com/u/19230832/streaming_cluster_architecture.png" alt="cluster architecture" width="480"/>
 
-Here data is collected from web server and transfered by Kafka message queue, Spark Streaming cluster will fetch data from Kafka in each batch duration and process it. Processed data can be put into in memory table using Shark's readable format. User can connect to embeded SharkServer for querying, Also user can self-implement output class to store processed data in any other way.
+Here data is collected from web server and transfered by [Kafka](http://kafka.apache.org/) message queue, Spark Streaming cluster will fetch data from Kafka in each batch duration and process it. Processed data can be put into in memory table using Shark's readable format. User can connect to embeded SharkServer for querying, Also user can self-implement output class to store processed data in any other way.
 
 The UML class chart is:
 
 <img src="https://dl.dropboxusercontent.com/u/19230832/streaming_uml.png" alt="streaming uml" width="480"/>
 
-Here each App is bound to Kafka's each topic, if you want to process several kinds of topics in one framework, you should implement each topic related App.
+Here each App is bound to each Kafka topic, if you want to process several kinds of topics in one framework, you should implement each topic related App.
 
 In each App, user can:
 
@@ -30,7 +30,7 @@ In each App, user can:
 
 ---
 
-User want to use this framework should configure the XML file `conf/properties.xml`, take below examples
+User who want to use this framework should configure the XML file `conf/properties.xml`, take below examples
 
     <applications>
         <operators>
@@ -104,7 +104,7 @@ First all the operators you used in your Apps should list in `<operators></opera
 Here several `application` can co-exists in one `applications`, I've already configure two applications "clickstream" and "weblog" in one configuration. User can configure `application` specific parameter like above:
 
 1. `category` is the category of Kafka messge, also use this as the topic name in Kafka.
-2. `parser` is the user defined parser class class, user should extends `AbstractParser` to self-defined one.
+2. `parser` is the user defined parser class class, user should extends `AbstractParser` to implement self-defined one.
 3. `items` is the schema of input message, in case input message has several items, this is the name of each item.
 4. `jobs` is the configuration of jobs in each application, you should specify a job `name` and `type`, `type` is the same as operator's `type` which means how job deals with streaming data, count or aggregate as example.
 
@@ -119,7 +119,7 @@ Here several `application` can co-exists in one `applications`, I've already con
 Currently framework supports 3 operators for user:
 
 * `CountOperator`: `CountOperator` will count the occurrence of specific `key`, like PV (page views), here are several parameters related to `CountOperator`,
-    * `window`: specify the timing window for Spark Streaming to collect data and calculate
+    * `window`: specify the timing window for Spark Streaming to collect data and calculate.
     * `slide`: specify the sliding parameter for this window, take `10` as example, Spark Streaming will process data in each 10 seconds for 30 seconds window data.
     * `output`: specify the output class you implemented to store the output data. `output` should extend `AbstractEventOutput`.
 * `AggregateOperator`: `AggregateOperator` will aggregate the `value` by `key` which you specified, and the parameters of this operator is the same as `CountOperator`.
@@ -128,15 +128,22 @@ Currently framework supports 3 operators for user:
 
 ---
 
-By running this demo, a log4j configuration is required, also shark-env.sh should be configured. If you want to enable fair scheduler in this demo, a fair scheduler configuration is required. to run this demo, by typing:
+By running Thunderain, a log4j configuration is required, also shark-env.sh should be configured. If you want to enable fair scheduler in Thunderain, a fair scheduler configuration is required. to run it, by typing:
 
-    ./run stream.framework.StreamingDemo conf/properties.xml conf/log4j.properties <conf/fairscheduler.xml>
+    ./run thunderainproject.thunderain.framework.Thunderain conf/properties.xml conf/log4j.properties [conf/fairscheduler.xml]
+
+Fair Scheduler configure is not required if you don't want to enable Fair Scheduler.
 
 Ps.
 
 1. Currently Spark Streaming's Kafka receiver only support string codec.
-2. to differentiate topics received from Kafka, current workaround method is to add topic to each incoming record, like:
+2. To differentiate topics received from Kafka, current workaround method is to add topic to each incoming record, like:
 
         clickstream + "|||" + record
 
    Because Spark Streaming will receive all the topics record in one `DStream` without differentiating which data to which topic, so a self-defined filter is needed.
+
+3. If you want to output processed data Shark readable TableRDD, you can take weblog example to implement your own one.
+4. Currently [Tachyon](https://github.com/amplab/tachyon) support is available in Thunderain, but there has some bugs related to Tachyon, it is recommended not to use Tachyon TableRDD output until it is stable.
+
+

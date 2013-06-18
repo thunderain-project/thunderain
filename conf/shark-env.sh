@@ -17,26 +17,26 @@
 
 # (Required) Amount of memory used per slave node. This should be in the same
 # format as the JVM's -Xmx option, e.g. 300m or 1g.
-export SPARK_MEM=1g
+export SPARK_MEM=15g
 
 # (Required) Set the master program's memory
 export SHARK_MASTER_MEM=1g
 
 # (Required) Point to your Scala installation.
-export SCALA_HOME=/home/jerryshao/bin/scala
+export SCALA_HOME=/opt/scala-2.9.3
 
 # (Required) Point to the patched Hive binary distribution
-export HIVE_DEV_HOME=/home/jerryshao/source-code/hive
-export HIVE_HOME=/home/jerryshao/source-code/hive/build/dist
+export HIVE_DEV_HOME=/opt/hive
+export HIVE_HOME=/opt/hive/build/dist
 
 # (Optional) Specify the location of Hive's configuration directory. By default,
 # it points to $HIVE_HOME/conf
 #export HIVE_CONF_DIR="$HIVE_HOME/conf"
 
 # For running Shark in distributed mode, set the following:
-#export HADOOP_HOME=""
-#export SPARK_HOME=""
-#export MASTER=""
+export HADOOP_HOME="/opt/hadoop-0.20-mapreduce-0.20.2+1359"
+export SPARK_HOME="/opt/spark_publish"
+export MASTER="spark://10.0.2.12:7077"
 #export MESOS_NATIVE_LIBRARY=/usr/local/lib/libmesos.so
 
 # (Optional) Extra classpath
@@ -44,8 +44,7 @@ export HIVE_HOME=/home/jerryshao/source-code/hive/build/dist
 
 # Java options
 # On EC2, change the local.dir to /mnt/tmp
-SPARK_JAVA_OPTS="-Dspark.local.dir=/tmp "
+SPARK_JAVA_OPTS="-Dspark.local.dir=/mnt/DP_disk1/spark,/mnt/DP_disk2/spark,/mnt/DP_disk3/spark,/mnt/DP_disk4/spark "
 SPARK_JAVA_OPTS+="-Dspark.kryoserializer.buffer.mb=10 "
-SPARK_JAVA_OPTS+="-verbose:gc -XX:-PrintGCDetails -XX:+PrintGCTimeStamps "
-SPARK_JAVA_OPTS+="-Dspark.default.parallelism=1 "
+SPARK_JAVA_OPTS+="-Dspark.cores.max=100 "
 export SPARK_JAVA_OPTS
