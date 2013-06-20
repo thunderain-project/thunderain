@@ -1,7 +1,7 @@
 Thunderain
 ==============
 
-**Thunderain**: a Real-Time Analytical Processing (RTAP) - a framework for streaming data counting and aggregating, like [Twitter Rainbird](http://www.slideshare.net/kevinweil/rainbird-realtime-analytics-at-twitter-strata-2011), but has more feature compared to it:
+**Thunderain**: a Real-Time Analytical Processing (RTAP) framework for streaming data counting and aggregating, like [Twitter Rainbird](http://www.slideshare.net/kevinweil/rainbird-realtime-analytics-at-twitter-strata-2011), but has more feature compared to it:
 
 * It has several kinds of operators, not only counter operator (which is in Rainbird). Also user can implement self-defined operators for your own needs.
 * It can process different topics of Kafka message with topic specific applications in one framework.
