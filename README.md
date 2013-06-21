@@ -29,7 +29,7 @@ For more details, please refer to the `conf/properties.xml` file.
 
 ---
 
-The Thunderain example provides two RTAP applications (*clickstream* and *weblog*), as defined in `conf/properties.xml`. To run the applications, one need to
+The Thunderain example provides two RTAP applications (*clickstream* and *weblog*), as defined in `conf/properties.xml`. They have been tested at our internal Spark/Shark deployment (which are available at https://github.com/thunderain-project/spark and https://github.com/thunderain-project/shark). To run the applications, one need to
 
  * Build the project by `sbt/sbt package`
  * Configure related properties (e.g., log4j, Spark fairScheduler, etc.) in the `conf/` directory
