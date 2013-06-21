@@ -1,7 +1,7 @@
 Thunderain
 ==============
 
-**Thunderain** is a Real-Time Analytical Processing (**RTAP**) example using [Spark](http://spark-project.org/) and [Shark](http://shark.cs.berkeley.edu/), which can be best characterized by the following four salient properties:
+**Thunderain** is a Real-Time Analytical Processing (<strong>RTAP</strong>) example using [Spark](http://spark-project.org/) and [Shark](http://shark.cs.berkeley.edu/), which can be best characterized by the following four salient properties:
 
  * Data continuously streamed in & processed in near real-time
  * Real-time data queried and presented in an online fashion
@@ -36,6 +36,6 @@ The Thunderain example provides two RTAP applications (i.e., **clickstream** and
  * Configure related properties (e.g., log4j, Spark fairScheduler, etc.) in the `conf/` directory
  * Launch the framework by `run thunderainproject.thunderain.framework.Thunderain <config file list>`
 
- ---
+---
 
- Thunderain is open source under a Apache License Version 2.0.
+Thunderain is open source under a Apache License Version 2.0.
