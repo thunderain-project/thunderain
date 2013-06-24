@@ -8,7 +8,7 @@ Thunderain
  * Real-time and history data combined and mined interactively
  * Predominantly RAM-based processing
 
-For more details, please refer to our presentation at the AMPLab retreat in May 2013.
+For more details, please refer to our [presentation](https://github.com/thunderain-project/thunderain/blob/master/Thunderain_AMPLab_Retreat_Summer_2013.pdf) at the AMPLab retreat in May 2013.
 
 ---
 
@@ -30,7 +30,7 @@ For more details, please refer to [wiki](https://github.com/thunderain-project/t
 
 ---
 
-The Thunderain example provides two RTAP applications (i.e., **clickstream** and **weblog**), as defined in `conf/properties.xml`. They have been tested at our internal Spark/Shark deployment (which are available at <https://github.com/thunderain-project/spark> and <https://github.com/thunderain-project/shark>). To run the applications, one need to
+The Thunderain example provides two RTAP applications (i.e., **clickstream** and **weblog**), as defined in `conf/properties.xml`. They have been tested at our internal Spark/Shark deployment (which are available at <https://github.com/thunderain-project/spark> and <https://github.com/thunderain-project/shark>). To run the applications, one needs to
 
  * Build the project by `sbt package`
  * Configure related properties (e.g., log4j, Spark fairScheduler, etc.) in the `conf/` directory
@@ -38,4 +38,4 @@ The Thunderain example provides two RTAP applications (i.e., **clickstream** and
 
 ---
 
-Thunderain is open source under a Apache License Version 2.0.
+Thunderain is open sourced under Apache License Version 2.0.
