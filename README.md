@@ -38,4 +38,4 @@ The Thunderain example provides two RTAP applications (i.e., **clickstream** and
 
 ---
 
-Thunderain is open sourced under Apache License Version 2.0.
+The Thunderain example is open sourced under Apache License Version 2.0.
