@@ -6,6 +6,7 @@
         <operator type="distinct_aggregate_count" class="thunderainproject.thunderain.framework.operator.DistinctAggregateCountOperator"/>
         <operator type="aggregate" class="thunderainproject.thunderain.framework.operator.AggregateOperator"/>
         <operator type="join_count" class="thunderainproject.thunderain.example.weblog.operator.JoinCountOperator"/>
+        <operator type="qiyi_accumulator" class="thunderainproject.thunderain.example.qiyi_log.QiyiLogOperator"/>
     </operators>
     <application>
         <category>clickstream</category>
@@ -64,6 +65,24 @@
                 <output>thunderainproject.thunderain.example.weblog.output.WebLogOutput</output>
             </job>
 
+        </jobs>
+    </application>
+    <application>
+        <category>qiyi_log</category>
+        <parser>thunderainproject.thunderain.example.qiyi_log.QiyiLogParser</parser>
+        <items>
+            <item>total_count</item>
+            <item>total_timelen</item>
+        </items>
+        <jobs>
+            <job name="qiyi_log_process" type="qiyi_accumulator">
+                <property window="60" slide="60"/>
+                <keys>
+                    <key>total_count</key>
+                    <key>total_timelen</key>
+                </keys>
+                <output>thunderainproject.thunderain.example.qiyi_log.QiyiLogOutput</output>
+            </job>
         </jobs>
     </application>
 </applications>
