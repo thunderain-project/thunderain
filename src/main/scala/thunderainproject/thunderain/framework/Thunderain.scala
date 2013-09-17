@@ -20,11 +20,12 @@ package thunderainproject.thunderain.framework
 
 import org.apache.log4j.PropertyConfigurator
 
+import org.apache.spark.SparkEnv
+import org.apache.spark.streaming.StreamingContext
+import org.apache.spark.streaming.Seconds
+
 import shark.{SharkEnv, SharkServer}
 
-import spark.SparkEnv
-import spark.streaming.StreamingContext
-import spark.streaming.Seconds
 
 object Thunderain {
   def main(args: Array[String]) {
@@ -37,8 +38,8 @@ object Thunderain {
     System.setProperty("spark.stream.concurrentJobs", "2")
 
     val schedulerEnabled = if (args.length > 2) {
-      System.setProperty("spark.cluster.schedulingmode", "FAIR")
-      System.setProperty("spark.fairscheduler.allocation.file", args(2))
+      System.setProperty("spark.scheduler.mode", "FAIR")
+      System.setProperty("spark.scheduler.allocation.file", args(2))
       true
     } else {
       false
@@ -51,7 +52,7 @@ object Thunderain {
       override def run() {
         SharkEnv.initWithSharkContext("Thunderain")
         if (schedulerEnabled == true) {
-          SharkEnv.sc.addLocalProperties("spark.scheduler.cluster.fair.pool", "1")
+          SharkEnv.sc.setLocalProperty("spark.scheduler.pool", "1")
         }
         sparkEnv = SparkEnv.get
         SharkServer.main(Array())
@@ -70,7 +71,7 @@ object Thunderain {
     val ssc =  new StreamingContext(SharkEnv.sc, Seconds(10))
     ssc.checkpoint("checkpoint")
     if (schedulerEnabled == true) {
-      ssc.sparkContext.addLocalProperties("spark.scheduler.cluster.fair.pool", "2")
+      ssc.sparkContext.setLocalProperty("spark.scheduler.pool", "2")
     }
 
     //register exit hook

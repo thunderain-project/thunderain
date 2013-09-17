@@ -18,18 +18,18 @@
 
 package thunderainproject.thunderain.example.weblog.output
 
+import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext._
+import org.apache.spark.storage.StorageLevel
+import org.apache.spark.streaming.DStream
+
 import scala.collection.mutable
 
 import shark.SharkEnv
 import shark.memstore2.column.ColumnBuilder
 import shark.memstore2.{TablePartition, TablePartitionStats}
 
-import spark.RDD
-import spark.SparkContext._
-import spark.storage.StorageLevel
-import spark.streaming.DStream
-
-import thunderainproject.thunderain.framework.output.{AbstractEventOutput, PrimitiveObjInspectorFactory, 
+import thunderainproject.thunderain.framework.output.{AbstractEventOutput, PrimitiveObjInspectorFactory,
   WritableObjectConvertFactory}
 
 abstract class TableRDDOutput extends AbstractEventOutput {
@@ -38,19 +38,19 @@ abstract class TableRDDOutput extends AbstractEventOutput {
   } else {
     System.getenv("DATA_CLEAN_TTL").toInt
   }
-  
+
   val COLUMN_SIZE = 1000
   private var checkpointTm = System.currentTimeMillis() / 1000
   val CHECKPOINT_INTERVAL = 600
-  
+
   override def preprocessOutput(stream: DStream[_]): DStream[_] = {
     stream.transform((r, t) => r.map(c => (t.milliseconds / 1000, c)))
   }
-  
+
   override def output(stream: DStream[_]) {
-    stream.foreach(r => {      
+    stream.foreach(r => {
       val statAccum = SharkEnv.sc.accumulableCollection(mutable.ArrayBuffer[(Int, TablePartitionStats)]())
-      
+
       val tblRdd = if (cleanBefore == -1) {
         buildTableRdd(r, statAccum)
       } else {
@@ -65,57 +65,57 @@ abstract class TableRDDOutput extends AbstractEventOutput {
         }
         rdd
       }
-      
+
       tblRdd.persist(StorageLevel.MEMORY_ONLY)
       tblRdd.foreach(_ => Unit)
-         
+
       // put rdd and statAccum to cache manager
       SharkEnv.memoryMetadataManager.put(outputName, tblRdd)
       SharkEnv.memoryMetadataManager.putStats(outputName, statAccum.value.toMap)
     })
   }
-  
-  private def buildTableRdd(rdd: RDD[_], 
-     stat: spark.Accumulable[mutable.ArrayBuffer[(Int, TablePartitionStats)], (Int, TablePartitionStats)]) 
+
+  private def buildTableRdd(rdd: RDD[_],
+     stat: org.apache.spark.Accumulable[mutable.ArrayBuffer[(Int, TablePartitionStats)], (Int, TablePartitionStats)])
   = {
     val newRdd = rdd.mapPartitionsWithIndex((index, iter) => {
       val objInspectors = formats.map(PrimitiveObjInspectorFactory.newPrimitiveObjInspector(_))
       val colBuilders = objInspectors.map(i => ColumnBuilder.create(i))
       colBuilders.foreach(c => c.initialize(COLUMN_SIZE))
-      
-      var numRows = 0;  
+
+      var numRows = 0;
       iter.foreach(row => {
         val (t1, ((t2, t3), t4)) = row.asInstanceOf[(Object, ((Object, Object), Object))]
-        Array(t1, t2, t3, t4).zipWithIndex.foreach(r => 
+        Array(t1, t2, t3, t4).zipWithIndex.foreach(r =>
           colBuilders(r._2).append(r._1, objInspectors(r._2)))
         numRows += 1
       })
-      
-      val tblPartStats = new TablePartitionStats(colBuilders.map(_.stats), numRows)
-      stat += (index, tblPartStats)   
-      
+
+      //val tblPartStats = new TablePartitionStats(colBuilders.map(_.stats), numRows)
+      //stat += (index, tblPartStats)
+
       Iterator(new TablePartition(numRows, colBuilders.map(_.build)))
     })
-    
+
     newRdd
   }
-  
+
   private def zipTableRdd(oldRdd: RDD[_], newRdd: RDD[_],
-    stat: spark.Accumulable[mutable.ArrayBuffer[(Int, TablePartitionStats)], (Int, TablePartitionStats)]) = {
-    
-    val zippedRdd = oldRdd.asInstanceOf[RDD[TablePartition]].zipPartitions(
+    stat: org.apache.spark.Accumulable[mutable.ArrayBuffer[(Int, TablePartitionStats)], (Int, TablePartitionStats)]) = {
+
+    val zippedRdd = oldRdd.asInstanceOf[RDD[TablePartition]].zipPartitions(newRdd.asInstanceOf[RDD[Any]]){
       (i1: Iterator[TablePartition], i2: Iterator[Any]) => {
         val objInspectors = formats.map(PrimitiveObjInspectorFactory.newPrimitiveObjInspector(_))
         val colBuilders = objInspectors.map(i => ColumnBuilder.create(i))
         colBuilders.foreach(c => c.initialize(COLUMN_SIZE))
-        
+
         var numRows = 0
         val currTm = System.currentTimeMillis() / 1000
         i1.foreach(t => {
           t.iterator.foreach(c => {
             val row = c.getFieldsAsList
             val tm = WritableObjectConvertFactory.writableObjectConvert(row.get(0), formats(0)).asInstanceOf[Long]
-            
+
             if (row.get(1) != null && row.get(2) != null && (currTm - tm) < cleanBefore) {
               colBuilders(0).append(tm: java.lang.Long, objInspectors(0))
               colBuilders(1).append(
@@ -127,21 +127,22 @@ abstract class TableRDDOutput extends AbstractEventOutput {
 
               numRows += 1
             }
-          })      
+          })
         })
-        
+
         i2.foreach(row => {
           val (t1, ((t2, t3), t4)) = row.asInstanceOf[(Object, ((Object, Object), Object))]
-          Array(t1, t2, t3, t4).zipWithIndex.foreach(r => 
+          Array(t1, t2, t3, t4).zipWithIndex.foreach(r =>
           colBuilders(r._2).append(r._1.asInstanceOf[Object], objInspectors(r._2)))
           numRows += 1
-        })    
+        })
 
-        val tblPartStats = new TablePartitionStats(colBuilders.map(_.stats), numRows)
-      
+        //val tblPartStats = new TablePartitionStats(colBuilders.map(_.stats), numRows)
+
         Iterator(new TablePartition(numRows, colBuilders.map(_.build)))
-      }, newRdd.asInstanceOf[RDD[Any]])
-        
+      }
+    }
+
     zippedRdd
   }
 }

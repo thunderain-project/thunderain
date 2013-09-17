@@ -18,9 +18,9 @@
 
 package thunderainproject.thunderain.framework.operator
 
-import scala.xml._
+import org.apache.spark.streaming.DStream
 
-import spark.streaming.DStream
+import scala.xml._
 
 import thunderainproject.thunderain.framework.Event
 

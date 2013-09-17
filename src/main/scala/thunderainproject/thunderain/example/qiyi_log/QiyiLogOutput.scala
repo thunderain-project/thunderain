@@ -1,9 +1,9 @@
 package thunderainproject.thunderain.example.qiyi_log
 
-import shark.SharkEnv
+import org.apache.spark.SparkContext._
+import org.apache.spark.streaming.DStream
 
-import spark.SparkContext._
-import spark.streaming.DStream
+import shark.SharkEnv
 
 import thunderainproject.thunderain.framework.output.AbstractEventOutput
 
