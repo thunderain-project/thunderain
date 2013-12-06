@@ -46,29 +46,39 @@ object Thunderain {
     }
 
     var sparkEnv: SparkEnv = null
-    //start shark server thread
-    val sharkThread = new Thread("SharkServer") {
-      setDaemon(true)
-      override def run() {
-        SharkEnv.initWithSharkContext("Thunderain")
-        if (schedulerEnabled == true) {
-          SharkEnv.sc.setLocalProperty("spark.scheduler.pool", "1")
+
+    //set DISABLE_SHARK_SERVICE in conf/thunderain-env.sh to disable shark service
+    if( System.getenv("DISABLE_SHARK_SERVICE") == null) {
+      //start shark server thread
+      val sharkThread = new Thread("SharkServer") {
+        setDaemon(true)
+        override def run() {
+          SharkEnv.initWithSharkContext("Thunderain")
+          if (schedulerEnabled == true) {
+            SharkEnv.sc.setLocalProperty("spark.scheduler.pool", "1")
+          }
+          sparkEnv = SparkEnv.get
+          SharkServer.main(Array())
         }
-        sparkEnv = SparkEnv.get
-        SharkServer.main(Array())
       }
+      sharkThread.start()
+      Thread.sleep(10000)
     }
-    sharkThread.start()
-    Thread.sleep(10000)
 
     PropertyConfigurator.configure(args(1))
 
     //parse the conf file
     FrameworkEnv.parseConfig(args(0))
 
-    //create streaming context
-    SparkEnv.set(sparkEnv)
-    val ssc =  new StreamingContext(SharkEnv.sc, Seconds(10))
+    val sc =
+      if(sparkEnv == null) SharkEnv.initWithSharkContext("Thunderain")
+      else {
+      //create streaming context
+        SparkEnv.set(sparkEnv)
+        SharkEnv.sc
+      }
+
+    val ssc =  new StreamingContext(sc, Seconds(10))
     ssc.checkpoint("checkpoint")
     if (schedulerEnabled == true) {
       ssc.sparkContext.setLocalProperty("spark.scheduler.pool", "2")
