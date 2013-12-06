@@ -28,8 +28,6 @@ object WritableObjectConvertFactory {
         obj.asInstanceOf[BooleanWritable].get.asInstanceOf[Object]
       case "Byte" =>
         obj.asInstanceOf[ByteWritable].get.asInstanceOf[Object]
-      case "Short" =>
-        obj.asInstanceOf[ShortWritable].get.asInstanceOf[Object]
       case "Int" =>
         obj.asInstanceOf[IntWritable].get.asInstanceOf[Object]
       case "Long" =>
