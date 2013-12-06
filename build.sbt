@@ -18,13 +18,17 @@ unmanagedJars in Compile <++= baseDirectory map { base =>
   customJars.classpath.filter(!_.toString.contains("guava"))
 }
 
-libraryDependencies += "org.apache.spark" %% "spark-core" % "0.8.0-incubating"
 
-libraryDependencies += "org.apache.spark" %% "spark-streaming" % "0.8.0-incubating"
+libraryDependencies += 
+  "org.apache.spark" %% "spark-core" % "0.9.0-incubating-SNAPSHOT" excludeAll(ExclusionRule(organization = "asm"))
 
-libraryDependencies += "edu.berkeley.cs.amplab" %% "shark" % "0.8.0-SNAPSHOT"
+libraryDependencies += 
+  "org.apache.spark" %% "spark-streaming" % "0.9.0-incubating-SNAPSHOT" excludeAll(ExclusionRule(organization = "asm"))
 
-libraryDependencies += "org.tachyonproject" % "tachyon" % "0.3.0-SNAPSHOT"
+libraryDependencies += 
+  "edu.berkeley.cs.amplab" %% "shark" % "0.9.0-SNAPSHOT" excludeAll(ExclusionRule(organization = "asm"))
+
+libraryDependencies += "org.tachyonproject" % "tachyon" % "0.4.0-SNAPSHOT"
 
 resolvers ++= Seq(
    "Local Maven" at Path.userHome.asFile.toURI.toURL + ".m2/repository",
