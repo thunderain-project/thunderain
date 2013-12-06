@@ -96,7 +96,7 @@ object Thunderain {
     // "|||" is a delimiter, category is topic name, message is content
     val kafkaInputs = System.getenv("KAFKA_INPUT_NUM").toInt
     val lines = (1 to kafkaInputs).map(_ =>
-      ssc.kafkaStream(zkQuorum, group, apps.map(e => (e._1, 1)))).toArray
+      ssc.kafkaStream(zkQuorum, group, apps.map(e => (e._1, 1))).map(_._2)).toArray
     val union = ssc.union(lines)
 
     val streams = apps.map(e => (e._1, union.filter(s => s.startsWith(e._1))))
