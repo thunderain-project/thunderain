@@ -18,8 +18,8 @@
 
 CREATE TABLE item_view_cached(time BIGINT, category STRING, item BIGINT, count BIGINT)
 ROW FORMAT SERDE "shark.memstore2.ColumnarSerDe"
-TBLPROPERTIES ("shark.cache" = "heap");
+TBLPROPERTIES ("shark.cache" = "true");
 
 CREATE TABLE subcategory_view_cached(time BIGINT, category STRING, subcategory STRING, count BIGINT)
 ROW FORMAT SERDE "shark.memstore2.ColumnarSerDe"
-TBLPROPERTIES ("shark.cache" = "heap");
+TBLPROPERTIES ("shark.cache" = "true");
