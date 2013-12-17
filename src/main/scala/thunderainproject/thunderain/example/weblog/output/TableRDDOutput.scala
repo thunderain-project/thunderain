@@ -27,10 +27,11 @@ import scala.collection.mutable
 
 import shark.SharkEnv
 import shark.memstore2.column.ColumnBuilder
-import shark.memstore2.{TablePartition, TablePartitionStats}
+import shark.memstore2.{CacheType, TablePartition, TablePartitionStats}
 
 import thunderainproject.thunderain.framework.output.{AbstractEventOutput, PrimitiveObjInspectorFactory,
   WritableObjectConvertFactory}
+import org.apache.hadoop.hive.metastore.MetaStoreUtils
 
 abstract class TableRDDOutput extends AbstractEventOutput {
   val cleanBefore = if (System.getenv("DATA_CLEAN_TTL") == null) {
@@ -54,7 +55,8 @@ abstract class TableRDDOutput extends AbstractEventOutput {
       val tblRdd = if (cleanBefore == -1) {
         buildTableRdd(r, statAccum)
       } else {
-        val rdd = SharkEnv.memoryMetadataManager.get(outputName) match {
+        val rdd = SharkEnv.memoryMetadataManager
+          .getMemoryTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, outputName).map(_.tableRDD) match {
           case None => buildTableRdd(r, statAccum)
           case Some(s) => zipTableRdd(s, r, statAccum)
         }
@@ -70,8 +72,13 @@ abstract class TableRDDOutput extends AbstractEventOutput {
       tblRdd.foreach(_ => Unit)
 
       // put rdd and statAccum to cache manager
-      SharkEnv.memoryMetadataManager.put(outputName, tblRdd)
-      SharkEnv.memoryMetadataManager.putStats(outputName, statAccum.value.toMap)
+      tblRdd.setName(outputName)
+      val memoryTable = SharkEnv.memoryMetadataManager
+        .getMemoryTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, outputName)
+        .getOrElse(SharkEnv.memoryMetadataManager.createMemoryTable(
+        MetaStoreUtils.DEFAULT_DATABASE_NAME, outputName, CacheType.MEMORY))
+      memoryTable.tableRDD = tblRdd
+      SharkEnv.memoryMetadataManager.putStats(MetaStoreUtils.DEFAULT_DATABASE_NAME, outputName, statAccum.value.toMap)
     })
   }
 

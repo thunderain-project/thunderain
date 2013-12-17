@@ -28,6 +28,7 @@ import org.apache.hadoop.io._
 import shark.SharkEnv
 import shark.SharkContext
 import shark.memstore2.{TablePartition, TablePartitionStats}
+import org.apache.hadoop.hive.metastore.MetaStoreUtils
 
 object TableRddTest {
   def main(args: Array[String]) {
@@ -47,12 +48,14 @@ object TableRddTest {
       val startTm = System.currentTimeMillis()
       val statAccum = SharkEnv.sc.accumulableCollection(mutable.ArrayBuffer[(Int, TablePartitionStats)]())
 
-      val rdd1 = SharkEnv.memoryMetadataManager.get("item_test1_cached") match {
+      val rdd1 = SharkEnv.memoryMetadataManager
+        .getMemoryTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,"item_test1_cached").map(_.tableRDD) match {
         case Some(s) => s
         case None => throw new Exception("cannot get item_test1_cached rdd in cache");exit(1)
       }
 
-      val rdd2 = SharkEnv.memoryMetadataManager.get("item_test2_cached") match {
+      val rdd2 = SharkEnv.memoryMetadataManager
+        .getMemoryTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,"item_test2_cached").map(_.tableRDD) match {
         case Some(s) => s
         case None => throw new Exception("cannot get item_test2_cached rdd in cache");exit(1)
       }
