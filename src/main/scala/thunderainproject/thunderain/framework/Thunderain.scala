@@ -58,7 +58,7 @@ object Thunderain {
             SharkEnv.sc.setLocalProperty("spark.scheduler.pool", "1")
           }
           sparkEnv = SparkEnv.get
-          SharkServer.main(Array())
+          SharkServer.main(Array("-skipRddReload"))
         }
       }
       sharkThread.start()
