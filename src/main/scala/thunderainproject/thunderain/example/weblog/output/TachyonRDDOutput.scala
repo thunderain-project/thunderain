@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.{ObjectInspector, ObjectIns
 
 import java.nio.{ByteBuffer, ByteOrder}
 import java.util.{List => JList, ArrayList => JArrayList}
+import org.apache.hadoop.hive.metastore.MetaStoreUtils
 
 
 abstract class TachyonRDDOutput extends AbstractEventOutput with Logging{
@@ -60,6 +61,7 @@ abstract class TachyonRDDOutput extends AbstractEventOutput with Logging{
   }
 
   var cachedRDD: RDD[TablePartition] = _
+  var tableKey: String = _
 
   val COLUMN_SIZE = 1000
   private var checkpointTm = System.currentTimeMillis() / 1000
@@ -88,7 +90,8 @@ abstract class TachyonRDDOutput extends AbstractEventOutput with Logging{
     }
     logDebug("fieldNames: " + fieldNames.mkString(",") + " formats: " + formats.mkString(","))
     //obtain the tachyonWriter from the shark util
-    tachyonWriter = SharkEnv.tachyonUtil.createTableWriter(outputName, formats.length + 1)
+    tableKey = SharkEnv.makeTachyonTableKey(MetaStoreUtils.DEFAULT_DATABASE_NAME, outputName)
+    tachyonWriter = SharkEnv.tachyonUtil.createTableWriter(tableKey, formats.length + 1)
 
     stream.transform((r, t) => r.map(c => (t.milliseconds / 1000, c)))
   }
@@ -116,7 +119,7 @@ abstract class TachyonRDDOutput extends AbstractEventOutput with Logging{
       tblRdd.foreach(_ => Unit) //to trigger spark job in order to evaluate it immediately
 
       // put rdd and statAccum to cache manager
-      if (tachyonWriter != null && statAccum != null && SharkEnv.tachyonUtil.tableExists(outputName)) {
+      if (tachyonWriter != null && statAccum != null && SharkEnv.tachyonUtil.tableExists(tableKey)) {
         //persist the stats onto tachyon file system, otherwise Shark cannot read those data from tachyon later
         tachyonWriter.updateMetadata(ByteBuffer.wrap(JavaSerializer.serialize(statAccum.value.toMap)))
       }
@@ -324,9 +327,9 @@ abstract class TachyonRDDOutput extends AbstractEventOutput with Logging{
    */
   def writeTablePartitionRDDToTachyon(inputrdd: RDD[TablePartition]): RDD[TablePartition] = {
     // Put the table in Tachyon.
-    logDebug("Putting RDD for %s in Tachyon".format(outputName))
+    logDebug("Putting RDD for %s in Tachyon".format(tableKey))
 
-    if(!SharkEnv.tachyonUtil.tableExists(outputName)) {
+    if(!SharkEnv.tachyonUtil.tableExists(tableKey)) {
       tachyonWriter.createTable(ByteBuffer.allocate(0))
     }
 
@@ -350,7 +353,7 @@ abstract class TachyonRDDOutput extends AbstractEventOutput with Logging{
         //tachyonWriter.writeColumnPartition(column, partitionIndex, buf)
 
         //the workaround solution
-        val tablepath = SharkEnvSlave.tachyonUtil.getPath(outputName)
+        val tablepath = SharkEnvSlave.tachyonUtil.getPath(tableKey)
         val rawTable = SharkEnvSlave.tachyonUtil.client.getRawTable(tablepath)
         val rawColumn = rawTable.getRawColumn(column)
         var file = rawColumn.getPartition(partitionIndex)
