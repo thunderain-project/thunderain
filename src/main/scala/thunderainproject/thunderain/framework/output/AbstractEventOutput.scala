@@ -18,7 +18,7 @@
 
 package thunderainproject.thunderain.framework.output
 
-import org.apache.spark.streaming.DStream
+import org.apache.spark.streaming.dstream.DStream
 
 abstract class AbstractEventOutput extends Serializable{
   protected var formats: Array[String] = _

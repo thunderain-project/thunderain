@@ -20,7 +20,7 @@ package thunderainproject.thunderain.example.weblog.output
 
 import org.apache.spark.Accumulable
 import org.apache.spark.rdd.RDD
-import org.apache.spark.streaming.DStream
+import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.Logging
 
 import scala._
@@ -33,7 +33,7 @@ import shark.tachyon.TachyonTableWriter
 import shark.execution.serialization.JavaSerializer
 import shark.memstore2.ColumnarStructObjectInspector.IDStructField
 import shark.{SharkContext, SharkEnvSlave, SharkEnv}
-import shark.memstore2.{ColumnarStructObjectInspector, TablePartitionBuilder, TablePartition, TablePartitionStats}
+import shark.memstore2._
 
 import thunderainproject.thunderain.framework.output.{AbstractEventOutput, PrimitiveObjInspectorFactory}
 
@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.{ObjectInspector, ObjectIns
 import java.nio.{ByteBuffer, ByteOrder}
 import java.util.{List => JList, ArrayList => JArrayList}
 import org.apache.hadoop.hive.metastore.MetaStoreUtils
+import scala.Tuple2
 
 
 abstract class TachyonRDDOutput extends AbstractEventOutput with Logging{
@@ -90,8 +91,8 @@ abstract class TachyonRDDOutput extends AbstractEventOutput with Logging{
     }
     logDebug("fieldNames: " + fieldNames.mkString(",") + " formats: " + formats.mkString(","))
     //obtain the tachyonWriter from the shark util
-    tableKey = SharkEnv.makeTachyonTableKey(MetaStoreUtils.DEFAULT_DATABASE_NAME, outputName)
-    tachyonWriter = SharkEnv.tachyonUtil.createTableWriter(tableKey, formats.length + 1)
+    tableKey = MemoryMetadataManager.makeTableKey(MetaStoreUtils.DEFAULT_DATABASE_NAME, outputName)
+    tachyonWriter = SharkEnv.tachyonUtil.createTableWriter(tableKey, None, formats.length + 1)
 
     stream.transform((r, t) => r.map(c => (t.milliseconds / 1000, c)))
   }
@@ -119,7 +120,7 @@ abstract class TachyonRDDOutput extends AbstractEventOutput with Logging{
       tblRdd.foreach(_ => Unit) //to trigger spark job in order to evaluate it immediately
 
       // put rdd and statAccum to cache manager
-      if (tachyonWriter != null && statAccum != null && SharkEnv.tachyonUtil.tableExists(tableKey)) {
+      if (tachyonWriter != null && statAccum != null && SharkEnv.tachyonUtil.tableExists(tableKey, None)) {
         //persist the stats onto tachyon file system, otherwise Shark cannot read those data from tachyon later
         tachyonWriter.updateMetadata(ByteBuffer.wrap(JavaSerializer.serialize(statAccum.value.toMap)))
       }
@@ -329,7 +330,7 @@ abstract class TachyonRDDOutput extends AbstractEventOutput with Logging{
     // Put the table in Tachyon.
     logDebug("Putting RDD for %s in Tachyon".format(tableKey))
 
-    if(!SharkEnv.tachyonUtil.tableExists(tableKey)) {
+    if(!SharkEnv.tachyonUtil.tableExists(tableKey, None)) {
       tachyonWriter.createTable(ByteBuffer.allocate(0))
     }
 
@@ -353,7 +354,7 @@ abstract class TachyonRDDOutput extends AbstractEventOutput with Logging{
         //tachyonWriter.writeColumnPartition(column, partitionIndex, buf)
 
         //the workaround solution
-        val tablepath = SharkEnvSlave.tachyonUtil.getPath(tableKey)
+        val tablepath = SharkEnvSlave.tachyonUtil.warehousePath + "/" + tableKey
         val rawTable = SharkEnvSlave.tachyonUtil.client.getRawTable(tablepath)
         val rawColumn = rawTable.getRawColumn(column)
         var file = rawColumn.getPartition(partitionIndex)

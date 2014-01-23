@@ -49,13 +49,13 @@ object TableRddTest {
       val statAccum = SharkEnv.sc.accumulableCollection(mutable.ArrayBuffer[(Int, TablePartitionStats)]())
 
       val rdd1 = SharkEnv.memoryMetadataManager
-        .getMemoryTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,"item_test1_cached").map(_.tableRDD) match {
+        .getMemoryTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,"item_test1_cached").map(_.getRDD.get) match {
         case Some(s) => s
         case None => throw new Exception("cannot get item_test1_cached rdd in cache");exit(1)
       }
 
       val rdd2 = SharkEnv.memoryMetadataManager
-        .getMemoryTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,"item_test2_cached").map(_.tableRDD) match {
+        .getMemoryTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,"item_test2_cached").map(_.getRDD.get) match {
         case Some(s) => s
         case None => throw new Exception("cannot get item_test2_cached rdd in cache");exit(1)
       }

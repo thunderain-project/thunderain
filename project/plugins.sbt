@@ -4,13 +4,13 @@ resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/release
 
 resolvers += "Spray Repository" at "http://repo.spray.cc/"
 
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.7")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.9.2")
 
-addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.1.0-RC1")
+addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.2.0")
 
-addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.0.0")
+addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.5.1")
 
-addSbtPlugin("cc.spray" %% "sbt-twirl" % "0.5.2")
+//addSbtPlugin("cc.spray" %% "sbt-twirl" % "0.5.2")
 
 
 // For Sonatype publishing

@@ -21,7 +21,7 @@ package thunderainproject.thunderain.example.weblog.output
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 import org.apache.spark.storage.StorageLevel
-import org.apache.spark.streaming.DStream
+import org.apache.spark.streaming.dstream.DStream
 
 import scala.collection.mutable
 
@@ -56,7 +56,7 @@ abstract class TableRDDOutput extends AbstractEventOutput {
         buildTableRdd(r, statAccum)
       } else {
         val rdd = SharkEnv.memoryMetadataManager
-          .getMemoryTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, outputName).map(_.tableRDD) match {
+          .getMemoryTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, outputName).map(_.getRDD.get) match {
           case None => buildTableRdd(r, statAccum)
           case Some(s) => zipTableRdd(s, r, statAccum)
         }
@@ -77,8 +77,7 @@ abstract class TableRDDOutput extends AbstractEventOutput {
         .getMemoryTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, outputName)
         .getOrElse(SharkEnv.memoryMetadataManager.createMemoryTable(
         MetaStoreUtils.DEFAULT_DATABASE_NAME, outputName, CacheType.MEMORY))
-      memoryTable.tableRDD = tblRdd
-      SharkEnv.memoryMetadataManager.putStats(MetaStoreUtils.DEFAULT_DATABASE_NAME, outputName, statAccum.value.toMap)
+      memoryTable.put(tblRdd, statAccum.value.toMap)
     })
   }
 

@@ -18,7 +18,8 @@
 
 package thunderainproject.thunderain.framework.operator
 
-import org.apache.spark.streaming.{DStream, Seconds}
+import org.apache.spark.streaming.Seconds
+import org.apache.spark.streaming.dstream.DStream
 
 import thunderainproject.thunderain.framework.Event
 

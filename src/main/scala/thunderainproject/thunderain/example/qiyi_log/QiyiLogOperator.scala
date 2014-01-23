@@ -1,6 +1,6 @@
 package thunderainproject.thunderain.example.qiyi_log
 
-import org.apache.spark.streaming.DStream
+import org.apache.spark.streaming.dstream.DStream
 
 import scala.xml._
 

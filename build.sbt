@@ -4,7 +4,7 @@ name := "thunderain"
 
 version := "0.1.0"
 
-scalaVersion := "2.9.3"
+scalaVersion := "2.10.3"
 
 retrieveManaged := true
 
@@ -25,6 +25,9 @@ libraryDependencies +=
 libraryDependencies += 
   "org.apache.spark" %% "spark-streaming" % "0.9.0-incubating-SNAPSHOT" excludeAll(ExclusionRule(organization = "asm"), 
     ExclusionRule(name = "slf4j-simple"))
+
+libraryDependencies +=
+  "org.apache.spark" %% "spark-streaming-kafka" % "0.9.0-incubating-SNAPSHOT" excludeAll( ExclusionRule(organization = "asm"),        ExclusionRule(name = "slf4j-simple"))
 
 libraryDependencies += 
   "edu.berkeley.cs.amplab" %% "shark" % "0.9.0-SNAPSHOT" excludeAll(ExclusionRule(organization = "asm"))

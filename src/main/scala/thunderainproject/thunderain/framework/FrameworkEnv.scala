@@ -18,7 +18,7 @@
 
 package thunderainproject.thunderain.framework
 
-import org.apache.spark.streaming.DStream
+import org.apache.spark.streaming.dstream.DStream
 
 import scala.xml._
 import scala.collection.mutable

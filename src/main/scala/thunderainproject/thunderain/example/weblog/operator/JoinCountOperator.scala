@@ -18,7 +18,7 @@
 
 package thunderainproject.thunderain.example.weblog.operator
 
-import org.apache.spark.streaming.DStream
+import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.SparkContext._
 
 import shark.{SharkEnv, SharkContext}
