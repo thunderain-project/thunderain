@@ -18,20 +18,22 @@
 
 package thunderainproject.thunderain.example.weblog.output
 
+import scala.collection.mutable
+import scala.collection.JavaConverters._
+
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext._
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.dstream.DStream
 
-import scala.collection.mutable
+import org.apache.hadoop.hive.metastore.MetaStoreUtils
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory
 
 import shark.SharkEnv
 import shark.memstore2.column.ColumnBuilder
 import shark.memstore2.{CacheType, TablePartition, TablePartitionStats}
 
-import thunderainproject.thunderain.framework.output.{AbstractEventOutput, PrimitiveObjInspectorFactory,
-  WritableObjectConvertFactory}
-import org.apache.hadoop.hive.metastore.MetaStoreUtils
+import thunderainproject.thunderain.framework.output.{AbstractEventOutput,
+  PrimitiveObjInspectorFactory, WritableObjectConvertFactory}
 
 abstract class TableRDDOutput extends AbstractEventOutput {
   val cleanBefore = if (System.getenv("DATA_CLEAN_TTL") == null) {
@@ -85,8 +87,12 @@ abstract class TableRDDOutput extends AbstractEventOutput {
      stat: org.apache.spark.Accumulable[mutable.ArrayBuffer[(Int, TablePartitionStats)], (Int, TablePartitionStats)])
   = {
     val newRdd = rdd.mapPartitionsWithIndex((index, iter) => {
-      val objInspectors = formats.map(PrimitiveObjInspectorFactory.newPrimitiveObjInspector(_))
-      val colBuilders = objInspectors.map(i => ColumnBuilder.create(i))
+      val columnarStructOI = ObjectInspectorFactory.getColumnarStructObjectInspector(formats.toList.asJava,
+          formats.map(PrimitiveObjInspectorFactory.newPrimitiveObjInspector(_)).toList.asJava)
+      val colBuilders = columnarStructOI.getAllStructFieldRefs.asScala.map {
+        s => ColumnBuilder.create(s) }.toArray
+      val objInspectors = columnarStructOI.getAllStructFieldRefs.asScala.map {
+        s => s.getFieldObjectInspector }.toArray
       colBuilders.foreach(c => c.initialize(COLUMN_SIZE))
 
       var numRows = 0;
@@ -111,8 +117,12 @@ abstract class TableRDDOutput extends AbstractEventOutput {
 
     val zippedRdd = oldRdd.asInstanceOf[RDD[TablePartition]].zipPartitions(newRdd.asInstanceOf[RDD[Any]]){
       (i1: Iterator[TablePartition], i2: Iterator[Any]) => {
-        val objInspectors = formats.map(PrimitiveObjInspectorFactory.newPrimitiveObjInspector(_))
-        val colBuilders = objInspectors.map(i => ColumnBuilder.create(i))
+        val columnarStructOI = ObjectInspectorFactory.getColumnarStructObjectInspector(formats.toList.asJava,
+            formats.map(PrimitiveObjInspectorFactory.newPrimitiveObjInspector(_)).toList.asJava)
+        val colBuilders = columnarStructOI.getAllStructFieldRefs.asScala.map {
+          s => ColumnBuilder.create(s) }.toArray
+        val objInspectors = columnarStructOI.getAllStructFieldRefs.asScala.map {
+          s => s.getFieldObjectInspector }.toArray
         colBuilders.foreach(c => c.initialize(COLUMN_SIZE))
 
         var numRows = 0

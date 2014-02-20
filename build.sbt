@@ -19,22 +19,25 @@ unmanagedJars in Compile <++= baseDirectory map { base =>
 }
 
 
-libraryDependencies += 
-  "org.apache.spark" %% "spark-core" % "0.9.0-incubating-SNAPSHOT" excludeAll(ExclusionRule(organization = "asm"))
+libraryDependencies +=
+  "org.apache.spark" % "spark-core_2.10" % "0.9.0-incubating" excludeAll(ExclusionRule(organization = "asm"))
 
-libraryDependencies += 
-  "org.apache.spark" %% "spark-streaming" % "0.9.0-incubating-SNAPSHOT" excludeAll(ExclusionRule(organization = "asm"), 
+libraryDependencies +=
+  "org.apache.spark" % "spark-streaming_2.10" % "0.9.0-incubating" excludeAll(ExclusionRule(organization = "asm"),
     ExclusionRule(name = "slf4j-simple"))
 
 libraryDependencies +=
-  "org.apache.spark" %% "spark-streaming-kafka" % "0.9.0-incubating-SNAPSHOT" excludeAll( ExclusionRule(organization = "asm"),        ExclusionRule(name = "slf4j-simple"))
+  "org.apache.spark" % "spark-streaming-kafka_2.10" % "0.9.0-incubating" excludeAll( ExclusionRule(organization = "asm"),        ExclusionRule(name = "slf4j-simple"))
 
-libraryDependencies += 
+libraryDependencies +=
   "edu.berkeley.cs.amplab" %% "shark" % "0.9.0-SNAPSHOT" excludeAll(ExclusionRule(organization = "asm"))
 
-libraryDependencies += "org.tachyonproject" % "tachyon" % "0.4.0-SNAPSHOT"
+libraryDependencies += "org.tachyonproject" % "tachyon" % "0.4.0"
 
 resolvers ++= Seq(
+   "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+   "Sonatype Staging" at "https://oss.sonatype.org/service/local/staging/deploy/maven2/",
+   "Spring Plugin Release" at "http://repo.springsource.org/plugins-release/",
    "Local Maven" at Path.userHome.asFile.toURI.toURL + ".m2/repository",
    "Maven Repository" at "http://repo1.maven.org/maven2",
    "Akka Repository" at "http://repo.akka.io/releases/",
