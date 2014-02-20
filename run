@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-SCALA_VERSION=2.9.3
+SCALA_VERSION=2.10
 THUNDERAIN_VERSION=0.1.0
 
 FWDIR="$(cd `dirname $0`; pwd)"
@@ -30,19 +30,7 @@ if [ -f "$FWDIR/conf/shark-env.sh" ]; then
   . $FWDIR/conf/shark-env.sh
 fi
 
-if [ "x$HIVE_HOME" == "x" ] ; then
-    echo "No HIVE_HOME specified. Please set HIVE_HOME."
-    exit 1
-fi
 
-if [ ! -f $HIVE_HOME/lib/hive-exec-0*.jar ] ; then
-  echo "Cannot find $HIVE_HOME/lib/hive-exec-0.9.0.jar."
-  echo "Are you sure your HIVE_HOME is set correctly?"
-  echo "HIVE_HOME = $HIVE_HOME"
-  exit 1
-fi
-
-#
 if [ "$LAUNCH_WITH_SCALA" == "1" ]; then
   if [ `command -v scala` ]; then
     RUNNER="scala"
@@ -72,15 +60,6 @@ else
   fi
 fi
 
-# Check for optionally specified configuration file path
-if [ "x$HIVE_CONF_DIR" == "x" ] ; then
-  HIVE_CONF_DIR="$HIVE_HOME/conf"
-fi
-
-if [ -f "${HIVE_CONF_DIR}/hive-env.sh" ]; then
-  . "${HIVE_CONF_DIR}/hive-env.sh"
-fi
-
 # Build up classpath
 CLASSPATH+=":$FWDIR/conf"
 CLASSPATH+=":$FWDIR/target/scala-$SCALA_VERSION/thunderain_$SCALA_VERSION-$THUNDERAIN_VERSION.jar"
@@ -98,15 +77,6 @@ if [ -e "$FWDIR/lib" ]; then
     CLASSPATH+=":$jar"
   done
 fi
-
-for jar in `find $HIVE_HOME/lib -name '*jar'`; do
-  # Ignore the logging library since it has already been included with the Spark jar.
-  if [[ "$jar" != *slf4j* ]]; then
-    CLASSPATH+=:$jar
-  fi
-done
-
-CLASSPATH+=:$HIVE_CONF_DIR
 
 if [ "x$HADOOP_HOME" == "x" ] ; then
   echo "No HADOOP_HOME specified. Shark will run in local-mode"
