@@ -57,7 +57,7 @@ class QiyiLogOperator extends AbstractOperator with OperatorConfig {
         try {
           e.keyMap(k).toLong
         } catch {
-          case _ => 0l
+          case _: Throwable => 0l
         }
       }
     }

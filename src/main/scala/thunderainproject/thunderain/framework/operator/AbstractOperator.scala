@@ -26,7 +26,7 @@ import thunderainproject.thunderain.framework.Event
 abstract class AbstractOperator extends Serializable {
   def process(stream: DStream[Event])
 
-  def windowStream[U: ClassManifest](stream: DStream[U],
+  def windowStream[U](stream: DStream[U],
 		  window: (Option[Long], Option[Long])) = {
     window match {
     case (Some(a), Some(b)) =>

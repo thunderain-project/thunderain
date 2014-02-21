@@ -116,5 +116,6 @@ object Thunderain {
     streams.foreach(e => apps(e._1).process(e._2))
 
     ssc.start()
+    ssc.awaitTermination()
   }
 }

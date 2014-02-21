@@ -51,7 +51,7 @@ abstract class TableRDDOutput extends AbstractEventOutput {
   }
 
   override def output(stream: DStream[_]) {
-    stream.foreach(r => {
+    stream.foreachRDD(r => {
       val statAccum = SharkEnv.sc.accumulableCollection(mutable.ArrayBuffer[(Int, TablePartitionStats)]())
 
       val tblRdd = if (cleanBefore == -1) {

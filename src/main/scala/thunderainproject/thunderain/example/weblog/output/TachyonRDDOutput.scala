@@ -74,18 +74,18 @@ abstract class TachyonRDDOutput extends AbstractEventOutput with Logging{
   }
 
   override def preprocessOutput(stream: DStream[_]): DStream[_] = {
-    val sc = try{
-      stream.context.sparkContext.asInstanceOf[SharkContext]  }
+    val sc = try {
+      stream.context.sparkContext.asInstanceOf[SharkContext] }
     catch {
-      case _ => {
+      case _: Throwable => {
         logError("Failed to obtain a SharkContext instance")
         null
       }
     }
     if(sc != null){
       val resultSets = sc.sql("describe %s".format(outputName)).flatMap(_.split("\\t")).zipWithIndex
-      setOutputFormat(resultSets.filter(_._2%3==0).map(_._1).toArray,
-        resultSets.filter(_._2%3==1).map(_._1).toArray)
+      setOutputFormat(resultSets.filter(_._2 % 3 == 0).map(_._1).toArray,
+        resultSets.filter(_._2 % 3 == 1).map(_._1).toArray)
 
       timeColumnIndex = fieldNames.zipWithIndex.toMap.apply("time")
     }
@@ -98,7 +98,7 @@ abstract class TachyonRDDOutput extends AbstractEventOutput with Logging{
   }
 
   override def output(stream: DStream[_]) {
-    stream.foreach(r => {
+    stream.foreachRDD(r => {
       val statAccum =
         stream.context.sparkContext.accumulableCollection(mutable.ArrayBuffer[(Int, TablePartitionStats)]())
 

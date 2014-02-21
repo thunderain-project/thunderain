@@ -9,7 +9,7 @@ import thunderainproject.thunderain.framework.output.AbstractEventOutput
 
 class QiyiLogOutput extends AbstractEventOutput {
   override def output(stream: DStream[_]) {
-    stream.asInstanceOf[DStream[Array[Long]]] foreach { (r, t) =>
+    stream.asInstanceOf[DStream[Array[Long]]] foreachRDD { (r, t) =>
       val totalCount = SharkEnv.sc.accumulator(0l)
       val totalTimeLen = SharkEnv.sc.accumulator(0l)
 

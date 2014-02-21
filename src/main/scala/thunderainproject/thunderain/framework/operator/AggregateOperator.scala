@@ -64,7 +64,7 @@ class AggregateOperator extends AbstractOperator with OperatorConfig {
     outputCls = try {
       Class.forName(config.outputClsName).newInstance().asInstanceOf[AbstractEventOutput]
     } catch {
-      case _ => throw new Exception("class" + config.outputClsName + " new instance failed")
+      case _: Throwable => throw new Exception("class" + config.outputClsName + " new instance failed")
     }
     outputCls.setOutputName(config.name)
   }
